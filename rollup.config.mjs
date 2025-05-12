@@ -2,6 +2,8 @@ import { defineConfig } from 'rollup'
 import typescriptPlugin from '@rollup/plugin-typescript'
 import swcPlugin from 'rollup-plugin-swc3'
 import * as fs from 'node:fs'
+import commonjsPlugin from '@rollup/plugin-commonjs'
+import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 
 // Why not rolldown?
 // Because at this moment rolldown adds extra runtime to the bundle
@@ -15,6 +17,8 @@ export default defineConfig([
     external: handleExternal,
     plugins: [
       cleanupPlugin('dist'),
+      nodeResolvePlugin(),
+      commonjsPlugin(),
       typescriptPlugin({
         declaration: true,
         declarationDir: 'dist/types',
@@ -34,7 +38,7 @@ export default defineConfig([
   {
     input: 'src/index.ts',
     external: handleExternal,
-    plugins: [createSwcPlugin()],
+    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
     output: {
       format: 'esm',
       dir: 'dist',
@@ -49,8 +53,9 @@ export default defineConfig([
       format: 'cjs',
       file: 'bin/cli.js',
       banner: '#!/usr/bin/env node',
+      interop: 'auto',
     },
-    plugins: [cleanupPlugin('bin'), createSwcPlugin()],
+    plugins: [cleanupPlugin('bin'), nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
   },
 ])
 
@@ -92,6 +97,6 @@ function createSwcPlugin() {
  * @param {string} id
  */
 function handleExternal(id) {
-  if (id.startsWith('./') || id.startsWith('../') || id.startsWith('/')) return false
+  if (id.startsWith('./') || id.startsWith('../') || id.startsWith('/') || id.startsWith('src')) return false
   return true
 }
