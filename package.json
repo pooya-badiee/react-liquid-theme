@@ -1,13 +1,13 @@
 {
-  "name": "react-liquid",
+  "name": "react-liquid-theme",
   "files": ["dist", "bin"],
   "scripts": {
     "format": "biome format --write",
     "lint": "biome lint --unsafe --write",
-    "build": "rollup -c rollup.config.js"
+    "build": "rollup -c rollup.config.mjs"
   },
   "bin": {
-    "react-liquid": "bin/react-liquid.js"
+    "react-liquid-theme": "bin/react-liquid-theme.js"
   },
   "sideEffects": false,
   "main": "dist/index.js",
