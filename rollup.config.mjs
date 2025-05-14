@@ -5,18 +5,35 @@ import * as fs from 'node:fs'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 
-// Why not rolldown?
-// Because at this moment rolldown adds extra runtime to the bundle
-// see bellow:
+// known issue:
 // https://github.com/rolldown/rolldown/discussions/4490
+
+// clean up dist folder first
+try {
+  if (fs.existsSync('dist')) {
+    fs.rmSync('dist', { recursive: true, force: true })
+  }
+} catch (error) {
+  console.error('Error while deleting dist folder:', error)
+}
 
 export default defineConfig([
   // commonjs build
   {
     input: 'src/index.ts',
     external: handleExternal,
+    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
+    output: {
+      format: 'cjs',
+      dir: 'dist',
+      entryFileNames: 'cjs/[name].js',
+    },
+  },
+  // esm build
+  {
+    input: 'src/index.ts',
+    external: handleExternal,
     plugins: [
-      cleanupPlugin('dist'),
       nodeResolvePlugin(),
       commonjsPlugin(),
       typescriptPlugin({
@@ -29,20 +46,9 @@ export default defineConfig([
       createSwcPlugin(),
     ],
     output: {
-      format: 'cjs',
-      dir: 'dist',
-      entryFileNames: '[name].js',
-    },
-  },
-  // esm build
-  {
-    input: 'src/index.ts',
-    external: handleExternal,
-    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
-    output: {
       format: 'esm',
       dir: 'dist',
-      entryFileNames: '[name].mjs',
+      entryFileNames: 'esm/[name].js',
     },
   },
   // cli app
@@ -50,31 +56,14 @@ export default defineConfig([
     input: 'src/cli.ts',
     external: handleExternal,
     output: {
-      format: 'cjs',
-      file: 'bin/cli.js',
+      format: 'esm',
+      file: 'dist/cli.js',
       banner: '#!/usr/bin/env node',
       interop: 'auto',
     },
-    plugins: [cleanupPlugin('bin'), nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
+    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
   },
 ])
-
-/**
- * @param {string} distDir
- */
-function cleanupPlugin(distDir) {
-  let didClean = false
-  return {
-    name: 'cleanup',
-    buildStart() {
-      if (didClean) return
-      if (fs.existsSync(distDir)) {
-        fs.rmSync(distDir, { recursive: true, force: true })
-      }
-      didClean = true
-    },
-  }
-}
 
 function createSwcPlugin() {
   return swcPlugin({

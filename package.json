@@ -1,23 +1,23 @@
 {
   "name": "react-liquid-theme",
   "license": "MIT",
-  "files": ["dist", "bin"],
+  "files": ["dist"],
   "scripts": {
     "format": "biome format --write",
     "lint": "biome lint --unsafe --write",
     "build": "rollup -c rollup.config.mjs"
   },
   "bin": {
-    "react-liquid-theme": "bin/cli.js"
+    "react-liquid-theme": "dist/cli.js"
   },
-  "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
       "types": "./dist/types/index.d.ts"
     }
   },

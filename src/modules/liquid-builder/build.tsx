@@ -5,8 +5,6 @@ import * as fs from 'node:fs'
 import { renderToString } from './render-to-string'
 import { getConfig } from './config'
 import type { BuildOptions } from './types'
-import { importModule } from './import-module'
-import type { ReactNode } from 'react'
 import chalk from 'chalk'
 import { PROCESSABLE_EXTENSIONS, SNIPPET_FILE_PATH_PATTERN } from './constants'
 
@@ -33,9 +31,7 @@ export async function build(options: BuildOptions) {
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
   console.log(
-    chalk.green(
-      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`,
-    ),
+    chalk.green(`✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`)
   )
 
   const processingStartTime = performance.now()
@@ -46,7 +42,7 @@ export async function build(options: BuildOptions) {
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
     console.log(
-      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`),
+      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`)
     )
     console.log('\n\n')
     console.log(chalk.bgGreen.black.bold(' BUILD COMPLETE '))
@@ -79,7 +75,7 @@ export async function generateLiquidFiles({
   options: BuildOptions
 }) {
   for (const { filePath, targetFileName, targetFolder } of getAllToExecuteFiles({ distDir, allSnippetFiles })) {
-    const module = await importModule<{ default: () => ReactNode }>(filePath)
+    const module = await import(filePath)
     const Component = module.default
     const reactOutputString = await renderToString(<Component />)
 
