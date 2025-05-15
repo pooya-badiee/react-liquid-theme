@@ -1,6 +1,6 @@
 import { LiquidTag, type BaseLiquidTagProps } from '../liquid-tag'
 
-interface LiquidIfProps extends BaseLiquidTagProps {
+export interface LiquidIfProps extends BaseLiquidTagProps {
   condition: string
 }
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { BaseLiquidTagProps } from './types'
 
-interface LiquidTagProps extends BaseLiquidTagProps {
+export interface LiquidTagProps extends BaseLiquidTagProps {
   name: string
   statement?: string
   children?: ReactNode
