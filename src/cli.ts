@@ -11,9 +11,9 @@ yargs(hideBin(process.argv))
       yargs
         // where parsed src files will be saved
         .option('dist', {
-          describe: 'Output directory for generated files',
+          describe: 'Directory where compiled JS files (for liquid generation) are output',
           type: 'string',
-          default: 'dist',
+          default: '.react-liquid',
           alias: 'd',
         })
         // where the react components are
