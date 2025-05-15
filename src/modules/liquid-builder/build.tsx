@@ -25,7 +25,7 @@ export async function build(options: BuildOptions) {
   const { output } = await rolldownBuild.write({
     dir: distDir,
     minify: false,
-    format: 'commonjs',
+    format: 'esm',
   })
   const buildTime = Math.round((performance.now() - startTime) * 100) / 100
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
