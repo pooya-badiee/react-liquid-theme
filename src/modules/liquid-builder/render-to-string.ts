@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { renderToPipeableStream } from 'react-dom/server'
 import { PassThrough } from 'node:stream'
+import * as prettier from 'prettier'
+import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone'
 
 export async function renderToString(reactNode: ReactNode): Promise<string> {
   return await new Promise<string>((resolve, reject) => {
@@ -12,7 +14,15 @@ export async function renderToString(reactNode: ReactNode): Promise<string> {
       // removes dead html comments
       html += chunk.replace(/<!--\s*-->|\\x3C!--\s*-->/g, '')
     })
-    stream.on('end', () => {
+    stream.on('end', async () => {
+      html = await prettier.format(html, {
+        parser: 'html',
+        plugins: [liquidPlugin],
+        printWidth: 120,
+        tabWidth: 2,
+        singleQuote: true,
+        trailingComma: 'all',
+      })
       resolve(html)
     })
     stream.on('error', reject)
