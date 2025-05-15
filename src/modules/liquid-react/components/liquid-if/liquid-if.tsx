@@ -1,17 +1,9 @@
-import type { BaseLiquidProps } from '../../types'
-import type { ReactNode } from 'react'
+import { LiquidTag, type BaseLiquidTagProps } from '../liquid-tag'
 
-interface LiquidIfProps extends BaseLiquidProps {
+interface LiquidIfProps extends BaseLiquidTagProps {
   condition: string
-  children: ReactNode
 }
 
-export function LiquidIf({ condition, children, leftTrim, rightTrim, leftBeginTrim, rightBeginTrim }: LiquidIfProps) {
-  return (
-    <>
-      {`{%${leftTrim ? '-' : ''} if ${condition} ${leftBeginTrim ? '-' : ''}%}`}
-      {children}
-      {`{%${rightTrim ? '-' : ''} endif ${rightBeginTrim ? '-' : ''}%}`}
-    </>
-  )
+export function LiquidIf({ condition, ...otherProps }: LiquidIfProps) {
+  return <LiquidTag name="if" statement={condition} {...otherProps} />
 }

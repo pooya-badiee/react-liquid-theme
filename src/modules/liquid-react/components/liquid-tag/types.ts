@@ -1,4 +1,4 @@
-export interface BaseLiquidProps {
+export interface BaseLiquidTagProps {
   leftTrim?: boolean
   rightTrim?: boolean
   leftBeginTrim?: boolean

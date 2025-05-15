@@ -1,8 +1,9 @@
 import dedent from 'dedent'
-import type { BaseLiquidProps } from '../../types'
 
-export interface LiquidStatementProps extends BaseLiquidProps {
+export interface LiquidStatementProps {
   statement: string
+  leftTrim?: boolean
+  rightTrim?: boolean
 }
 
 export function LiquidStatement({ statement, leftTrim, rightTrim }: LiquidStatementProps) {
