@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { renderToPipeableStream } from 'react-dom/server'
 import { PassThrough } from 'node:stream'
 import * as prettier from 'prettier'
-import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone'
+import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone.js'
 
 export async function renderToString(reactNode: ReactNode): Promise<string> {
   return await new Promise<string>((resolve, reject) => {
@@ -16,7 +16,7 @@ export async function renderToString(reactNode: ReactNode): Promise<string> {
     })
     stream.on('end', async () => {
       html = await prettier.format(html, {
-        parser: 'html',
+        parser: 'liquid-html',
         plugins: [liquidPlugin],
         printWidth: 120,
         tabWidth: 2,
