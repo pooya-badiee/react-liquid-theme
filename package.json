@@ -30,6 +30,7 @@
     "@rollup/plugin-commonjs": "^28",
     "@rollup/plugin-node-resolve": "^16",
     "@rollup/plugin-typescript": "^12",
+    "@rollup/pluginutils": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
