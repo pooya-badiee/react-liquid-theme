@@ -5,9 +5,6 @@ import * as fs from 'node:fs'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 
-// known issue:
-// https://github.com/rolldown/rolldown/discussions/4490
-
 // clean up dist folder first
 try {
   if (fs.existsSync('dist')) {

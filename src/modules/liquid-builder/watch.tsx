@@ -1,4 +1,4 @@
-import { watch as rolldownWatch } from 'rolldown'
+import { type RollupError, watch as rollupWatch } from 'rollup'
 import * as path from 'node:path'
 import { getConfig } from './config'
 import type { BuildOptions } from './types'
@@ -49,7 +49,7 @@ async function handleBundleEnd({
 }
 
 // Handle error event
-function handleBundleError(error: Error): void {
+function handleBundleError(error: Error | RollupError): void {
   console.error(chalk.red('❌ Bundle error:'), error.message)
 }
 
@@ -60,19 +60,18 @@ export function watch(options: BuildOptions) {
   cleanup({ distDir })
 
   let disposer: () => void = () => {}
-  const startRolldownWatcher = () => {
+  const startRollupWatcher = () => {
     let buildStartTime: number | null = null
     let isFirstBuild = true
 
     const allSnippetFiles = getAllSnippetFiles({ sourceDir: path.join(rootPath, options.source) })
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
-    const watcher = rolldownWatch({
+    const watcher = rollupWatch({
       ...getConfig(allSnippetFiles),
       output: {
         dir: path.join(rootPath, options.dist),
-        minify: false,
-        format: 'commonjs',
+        format: 'esm',
       },
     })
 
@@ -104,13 +103,13 @@ export function watch(options: BuildOptions) {
     return () => watcher.close()
   }
 
-  disposer = startRolldownWatcher()
+  disposer = startRollupWatcher()
 
   const handleWatchEvent = throttle((filePath: string) => {
     if (!getIsPathProcessable(filePath)) return
 
     disposer()
-    disposer = startRolldownWatcher()
+    disposer = startRollupWatcher()
   }, 100)
 
   const watcher = chokidar

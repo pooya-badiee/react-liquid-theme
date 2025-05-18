@@ -1,13 +1,15 @@
-import type { rolldown, RolldownPluginOption } from 'rolldown'
+import type { rollup } from 'rollup'
 import swc from 'rollup-plugin-swc3'
-import { createStylePlugin } from './style-plugin'
+import { nodeResolve as nodeResolvePlugin } from '@rollup/plugin-node-resolve'
+import commonjsPlugin from '@rollup/plugin-commonjs'
 
 export function getConfig(files: string[]) {
   return {
     input: files,
     jsx: 'react-jsx',
     plugins: [
-      createStylePlugin(),
+      nodeResolvePlugin(),
+      commonjsPlugin(),
       swc({
         jsc: {
           parser: {
@@ -22,7 +24,7 @@ export function getConfig(files: string[]) {
             },
           },
         },
-      }) as RolldownPluginOption,
+      }),
     ],
-  } satisfies Parameters<typeof rolldown>[0]
+  } satisfies Parameters<typeof rollup>[0]
 }
