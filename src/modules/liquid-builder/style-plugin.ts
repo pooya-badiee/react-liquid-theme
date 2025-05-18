@@ -19,7 +19,7 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
         postCssMap.set(filename, json)
       },
       generateScopedName(name, filename, _css) {
-        const cssFilenameId = createIdForFile(filename)
+        const cssFilenameId = createIdForFile(filename, name)
         return `${name}__${cssFilenameId}`
       },
     }),
@@ -69,11 +69,12 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
 
 const idMap = new Map<string, number>()
 // id is a number, starting from 1
-function createIdForFile(filepath: string) {
-  const id = idMap.get(filepath)
-  if (id) return id
+function createIdForFile(filepath: string, name: string) {
+  const keyId = `${filepath}__${name}`
+  const valueId = idMap.get(keyId)
+  if (valueId) return valueId
 
   const newId = idMap.size + 1
-  idMap.set(filepath, newId)
+  idMap.set(keyId, newId)
   return newId
 }
