@@ -38,6 +38,7 @@ export async function build(options: BuildOptions) {
 
   try {
     await generateLiquidFiles({ distDir, allSnippetFiles, rootPath, options })
+    await copyAssetFiles({ distDir, themeDir: path.join(rootPath, options.theme) })
     const processingTime = Math.round((performance.now() - processingStartTime) * 100) / 100
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
@@ -102,6 +103,21 @@ function getAllToExecuteFiles({ distDir, allSnippetFiles }: { distDir: string; a
     }))
 
   return allDistFiles
+}
+export function copyAssetFiles({ distDir, themeDir }: { distDir: string; themeDir: string }) {
+  // copy all files from distDir/assets to themeDir/assets
+  const assetFiles = globSync(path.join(distDir, 'assets/**/*'))
+  for (const assetFile of assetFiles) {
+    const relativePath = path.relative(distDir, assetFile)
+    const targetPath = path.join(themeDir, 'assets', relativePath)
+    const targetDir = path.dirname(targetPath)
+
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true })
+    }
+
+    fs.copyFileSync(assetFile, targetPath)
+  }
 }
 
 function parseProcessableFilePath(path: string) {

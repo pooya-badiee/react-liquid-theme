@@ -60,7 +60,7 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
       const finalCss = collectedCss.join('\n')
       this.emitFile({
         type: 'asset',
-        fileName: output,
+        fileName: `assets/${output}`,
         source: finalCss,
       })
     },

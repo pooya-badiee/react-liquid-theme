@@ -4,7 +4,7 @@ import { getConfig } from './config'
 import type { BuildOptions } from './types'
 import chokidar from 'chokidar'
 import { throttle } from './utils'
-import { cleanup, generateLiquidFiles, getAllSnippetFiles } from './build'
+import { cleanup, copyAssetFiles, generateLiquidFiles, getAllSnippetFiles } from './build'
 import { PROCESSABLE_EXTENSIONS } from './constants'
 import chalk from 'chalk'
 
@@ -35,6 +35,10 @@ async function handleBundleEnd({
       distDir,
       rootPath,
       options,
+    })
+    await copyAssetFiles({
+      distDir,
+      themeDir: path.join(rootPath, options.theme),
     })
 
     const buildTime = Math.round((performance.now() - buildStartTime) * 100) / 100
