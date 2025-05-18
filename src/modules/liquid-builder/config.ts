@@ -2,14 +2,24 @@ import type { rollup } from 'rollup'
 import swc from 'rollup-plugin-swc3'
 import { nodeResolve as nodeResolvePlugin } from '@rollup/plugin-node-resolve'
 import commonjsPlugin from '@rollup/plugin-commonjs'
+import { createStylePlugin } from './style-plugin'
 
 export function getConfig(files: string[]) {
   return {
     input: files,
     jsx: 'react-jsx',
+    external: [
+      'react',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'react-dom',
+      'react-dom/client',
+      'react-dom/server',
+    ],
     plugins: [
       nodeResolvePlugin(),
       commonjsPlugin(),
+      createStylePlugin(),
       swc({
         jsc: {
           parser: {
@@ -18,7 +28,7 @@ export function getConfig(files: string[]) {
           },
           transform: {
             react: {
-              development: true,
+              development: false,
               runtime: 'automatic',
               importSource: 'react',
             },
