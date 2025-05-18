@@ -21,12 +21,12 @@ npx react-liquid-theme generate
 
 ### Options
 
-| Option     | Alias | Type    | Default         | Description                                       |
-| ---------- | ----- | ------- | --------------- | ------------------------------------------------- |
-| `--source` | `-s`  | string  | `src`           | Source directory for React components             |
-| `--dist`   | `-d`  | string  | `.react-liquid` | Intermediate JS output dir (add it to .gitignore) |
-| `--theme`  | `-t`  | string  | `theme`         | Shopify theme output directory                    |
-| `--watch`  | `-w`  | boolean | `false`         | Watch mode for development                        |
+| Option     | Alias | Type    | Default         | Description                                    |
+| ---------- | ----- | ------- | --------------- | ---------------------------------------------- |
+| `--source` | `-s`  | string  | `src`           | Source directory for React components          |
+| `--dist`   | `-d`  | string  | `.react-liquid` | Intermediate JS output dir (add to .gitignore) |
+| `--theme`  | `-t`  | string  | `theme`         | Shopify theme output directory                 |
+| `--watch`  | `-w`  | boolean | `false`         | Watch mode for development                     |
 
 ---
 
@@ -42,21 +42,33 @@ Use file suffixes to automatically route to Shopify theme folders:
 
 ---
 
+## 🎨 Style Support
+
+React Liquid Theme supports the following stylesheet formats out-of-the-box:
+
+- **CSS**
+- **SASS/SCSS**
+- **CSS/SASS Modules**
+
+You can import styles directly in your React components, and they will be bundled correctly in the generated Liquid theme.
+
+---
+
 ## 🧹 Built-in Components
 
 These React components map to Liquid tags or control flow logic:
 
-| Component         | Description          |
-| ----------------- | -------------------- |
-| `LiquidAssign`    | `{% assign %}`       |
-| `LiquidBreak`     | `{% break %}`        |
-| `LiquidCapture`   | `{% capture %}`      |
-| `LiquidContinue`  | `{% continue %}`     |
-| `LiquidFor`       | `{% for %}`          |
-| `LiquidIf`        | `{% if %}`           |
-| `LiquidUnless`    | `{% unless %}`       |
-| `LiquidStatement` | `{% liquid %}`       |
-| `LiquidTag`       | `can create any tag` |
+| Component         | Description        |
+| ----------------- | ------------------ |
+| `LiquidAssign`    | `{% assign %}`     |
+| `LiquidBreak`     | `{% break %}`      |
+| `LiquidCapture`   | `{% capture %}`    |
+| `LiquidContinue`  | `{% continue %}`   |
+| `LiquidFor`       | `{% for %}`        |
+| `LiquidIf`        | `{% if %}`         |
+| `LiquidUnless`    | `{% unless %}`     |
+| `LiquidStatement` | `{% liquid %}`     |
+| `LiquidTag`       | Can create any tag |
 
 ---
 
