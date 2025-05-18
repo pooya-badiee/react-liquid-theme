@@ -44,13 +44,13 @@ Use file suffixes to automatically route to Shopify theme folders:
 
 ## 🎨 Style Support
 
-React Liquid Theme supports the following stylesheet formats out-of-the-box:
+React Liquid Theme supports:
 
 - **CSS**
 - **SASS/SCSS**
 - **CSS/SASS Modules**
 
-You can import styles directly in your React components, and they will be bundled correctly in the generated Liquid theme.
+Import styles into React components, and they will be bundled into `main.css` in the `theme/assets` directory.
 
 ---
 
