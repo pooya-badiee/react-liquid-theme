@@ -25,5 +25,6 @@
     "moduleResolution": "bundler",
     "module": "Preserve",
     "jsx": "react-jsx"
-  }
+  },
+  "include": ["src/**/*"]
 }

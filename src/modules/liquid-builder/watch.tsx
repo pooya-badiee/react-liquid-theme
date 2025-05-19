@@ -68,7 +68,7 @@ export function watch(options: BuildOptions) {
     let buildStartTime: number | null = null
     let isFirstBuild = true
 
-    const allSnippetFiles = getAllSnippetFiles({ sourceDir: path.join(rootPath, options.source) })
+    const allSnippetFiles = getAllSnippetFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
     const watcher = rollupWatch({

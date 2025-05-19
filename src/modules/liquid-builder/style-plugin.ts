@@ -27,7 +27,7 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
   const collectedCss: string[] = []
 
   return {
-    name: 'liquid-style',
+    name: 'rollup-plugin-liquid-style',
     transform: async (code, id) => {
       const isCss = cssFilter(id)
       const isScss = scssFilter(id)
@@ -49,7 +49,7 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
       }
       const json = postCssMap.get(id)
       return {
-        code: `export default ${JSON.stringify(result.css)}; export const styles = ${JSON.stringify(json)}`,
+        code: `export default ${JSON.stringify(json)}; export const css = ${JSON.stringify(result.css)}`,
         moduleType: 'js',
         map: null,
         moduleSideEffects: false,
