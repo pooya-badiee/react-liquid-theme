@@ -2,6 +2,7 @@
   "name": "react-liquid-theme",
   "license": "MIT",
   "files": ["dist"],
+  "version": "0.1.0-alpha",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
