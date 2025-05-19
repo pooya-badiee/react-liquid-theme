@@ -41,6 +41,7 @@ export default defineConfig([
         exclude: ['src/cli.ts', 'src/modules/liquid-builder/**/*.ts', 'src/modules/liquid-builder/**/*.tsx'],
       }),
       createSwcPlugin(),
+      copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/types/declarations.d.ts' }]),
     ],
     output: {
       format: 'esm',
@@ -77,6 +78,19 @@ function createSwcPlugin() {
       },
     },
   })
+}
+
+function copyPlugin(files) {
+  return {
+    name: 'rollup-plugin-copy',
+    writeBundle() {
+      for (const file of files) {
+        const source = file.from
+        const dest = file.to
+        fs.copyFileSync(source, dest)
+      }
+    },
+  }
 }
 
 /**

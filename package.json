@@ -1,9 +1,7 @@
 {
   "name": "react-liquid-theme",
   "license": "MIT",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
@@ -23,6 +21,14 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./declarations": {
+      "types": "./dist/types/declarations.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "declarations": ["./dist/types/declarations.d.ts"]
     }
   },
   "devDependencies": {

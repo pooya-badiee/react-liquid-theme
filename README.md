@@ -14,6 +14,14 @@ npm install react-liquid-theme
 
 ## 🚀 Usage
 
+Include this in a definition file (e.g., `src/declarations.d.ts`).
+
+```ts
+/// <reference types="react-liquid-theme/declarations" />
+```
+
+Then Run this command to generate the Shopify theme files:
+
 ```bash
 # Generate liquid files from React components
 npx react-liquid-theme generate
