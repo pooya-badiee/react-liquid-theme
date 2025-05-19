@@ -15,7 +15,7 @@
   "files": [
     "dist"
   ],
-  "version": "0.1.0-alpha",
+  "version": "0.1.0",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
