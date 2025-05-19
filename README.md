@@ -55,8 +55,8 @@ Use file suffixes to automatically route to Shopify theme folders:
 React Liquid Theme supports:
 
 - **CSS**
-- **SASS/SCSS**
-- **CSS/SASS Modules**
+- **SCSS**
+- **CSS/SCSS Modules**
 
 Import styles into React components, and they will be bundled into `main.css` in the `theme/assets` directory.
 
@@ -87,6 +87,7 @@ These React components map to Liquid tags or control flow logic:
   - react ≥ 19
   - react-dom ≥ 19
   - typescript ≥ 5.8
+  - sass >= 1
 
 ---
 
