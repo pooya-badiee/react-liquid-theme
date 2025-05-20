@@ -64,7 +64,7 @@ yargs(hideBin(process.argv))
         theme: argv.theme,
         css: argv.css,
       })
-    }
+    },
   )
   .version('1.0.0')
   .strict()

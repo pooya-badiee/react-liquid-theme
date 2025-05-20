@@ -21,6 +21,7 @@ export function setup() {
     build: 'react-liquid-theme generate',
     watch: 'react-liquid-theme generate --watch',
   }
+  packageJson.type = 'module'
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
@@ -51,7 +52,9 @@ export function setup() {
               <p>This is an example snippet</p>
             </div>
           )
-        }`,
+        }
+          
+        export default ExampleSnippet`,
     )
   }
 

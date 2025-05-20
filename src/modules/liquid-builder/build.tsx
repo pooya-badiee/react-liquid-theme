@@ -33,7 +33,9 @@ export async function build(options: BuildOptions) {
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
   console.log(
-    chalk.green(`✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`)
+    chalk.green(
+      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`,
+    ),
   )
 
   const processingStartTime = performance.now()
@@ -45,7 +47,7 @@ export async function build(options: BuildOptions) {
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
     console.log(
-      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`)
+      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`),
     )
     console.log('\n\n')
     console.log(chalk.bgGreen.black.bold(' BUILD COMPLETE '))
@@ -59,8 +61,8 @@ export function getAllSnippetFiles({ sourcePath, rootPath }: { sourcePath: strin
   const relativeSource = path.relative(rootPath, sourcePath)
   const patterns = ['ts', 'tsx'].flatMap((ext) =>
     PROCESSABLE_EXTENSIONS.map((type) =>
-      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`)
-    )
+      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`),
+    ),
   )
 
   const allSnippetFiles = globSync(patterns, { cwd: rootPath, absolute: true })
@@ -123,7 +125,7 @@ export async function copyAssetFiles({ distDir, themeDir }: { distDir: string; t
 
       await fsPromises.mkdir(targetDir, { recursive: true })
       await fsPromises.copyFile(assetFile, targetPath)
-    })
+    }),
   )
 }
 
