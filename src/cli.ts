@@ -40,6 +40,13 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           default: false,
           alias: 'w',
+        })
+        // css output
+        .option('css', {
+          describe: 'Output CSS file name',
+          type: 'string',
+          default: 'main.css',
+          alias: 'c',
         }),
     (argv) => {
       if (argv.watch) {
@@ -47,6 +54,7 @@ yargs(hideBin(process.argv))
           dist: argv.dist,
           source: argv.source,
           theme: argv.theme,
+          css: argv.css,
         })
         return
       }
@@ -54,8 +62,9 @@ yargs(hideBin(process.argv))
         dist: argv.dist,
         source: argv.source,
         theme: argv.theme,
+        css: argv.css,
       })
-    },
+    }
   )
   .version('1.0.0')
   .strict()

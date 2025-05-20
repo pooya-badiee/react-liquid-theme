@@ -4,7 +4,7 @@ import { nodeResolve as nodeResolvePlugin } from '@rollup/plugin-node-resolve'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import { createStylePlugin } from './style-plugin'
 
-export function getConfig(files: string[]) {
+export function getConfig(files: string[], options: { css: string }) {
   return {
     input: files,
     jsx: 'react-jsx',
@@ -19,7 +19,7 @@ export function getConfig(files: string[]) {
     plugins: [
       nodeResolvePlugin(),
       commonjsPlugin(),
-      createStylePlugin(),
+      createStylePlugin({ output: options.css }),
       swc({
         jsc: {
           parser: {

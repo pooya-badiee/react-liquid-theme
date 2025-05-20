@@ -32,7 +32,6 @@ npx react-liquid-theme generate
 ```bash
 mkdir my-theme
 cd my-theme
-npm init -y
 npm install react-liquid-theme
 npx react-liquid-theme setup
 
