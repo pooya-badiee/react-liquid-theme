@@ -27,7 +27,18 @@ Then Run this command to generate the Shopify theme files:
 npx react-liquid-theme generate
 ```
 
-### Options
+## Setting up an example project
+
+```bash
+mkdir my-theme
+cd my-theme
+npm init -y
+npm install react-liquid-theme
+npx react-liquid-theme setup
+
+```
+
+### `react-liquid-theme generate` Options
 
 | Option     | Alias | Type    | Default         | Description                                    |
 | ---------- | ----- | ------- | --------------- | ---------------------------------------------- |

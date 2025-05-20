@@ -1,9 +1,13 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { build, watch } from './modules/liquid-builder'
+import { setup } from './modules/liquid-setup/setup'
 
 yargs(hideBin(process.argv))
   .help()
+  .command('setup', 'sets up the project for react-liquid-theme', () => {
+    setup()
+  })
   .command(
     'generate',
     'generates liquid files from react components',
