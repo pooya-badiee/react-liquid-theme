@@ -14,6 +14,8 @@ npm install react-liquid-theme
 
 ## 🚀 Usage
 
+>⚠️ **Note:** This package only supports ESM (ECMAScript Modules). It will **not** work with CommonJS.
+
 Include this in a definition file (e.g., `src/declarations.d.ts`).
 
 ```ts
@@ -45,6 +47,7 @@ npx react-liquid-theme setup
 | `--dist`   | `-d`  | string  | `.react-liquid` | Intermediate JS output dir (add to .gitignore) |
 | `--theme`  | `-t`  | string  | `theme`         | Shopify theme output directory                 |
 | `--watch`  | `-w`  | boolean | `false`         | Watch mode for development                     |
+| `--css`    |       | string  | `main.css`      | Output CSS file name                           |
 
 ---
 

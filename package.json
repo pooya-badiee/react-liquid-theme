@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "files": ["dist"],
-  "version": "0.2.4",
+  "version": "0.2.5",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
@@ -20,22 +20,20 @@
     "react-liquid-theme": "dist/cli.js"
   },
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./declarations": {
-      "types": "./dist/types/declarations.d.ts"
+      "types": "./dist/declarations.d.ts"
     }
   },
   "typesVersions": {
     "*": {
-      "declarations": ["./dist/types/declarations.d.ts"]
+      "declarations": ["./dist/declarations.d.ts"]
     }
   },
   "devDependencies": {
@@ -65,8 +63,8 @@
     "postcss": "^8",
     "postcss-modules": "^6",
     "rollup": "^4",
-    "@rollup/plugin-commonjs": "^28",
-    "@rollup/plugin-node-resolve": "^16"
+    "@rollup/plugin-node-resolve": "^16",
+    "@rollup/plugin-commonjs": "^28"
   },
   "peerDependencies": {
     "react": ">=19",

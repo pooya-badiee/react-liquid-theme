@@ -46,7 +46,6 @@ yargs(hideBin(process.argv))
           describe: 'Output CSS file name',
           type: 'string',
           default: 'main.css',
-          alias: 'c',
         }),
     (argv) => {
       if (argv.watch) {
@@ -66,6 +65,6 @@ yargs(hideBin(process.argv))
       })
     },
   )
-  .version('1.0.0')
+  .version('0.2.5')
   .strict()
   .parse()

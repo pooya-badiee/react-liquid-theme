@@ -15,17 +15,6 @@ try {
 }
 
 export default defineConfig([
-  // commonjs build
-  {
-    input: 'src/index.ts',
-    external: handleExternal,
-    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
-    output: {
-      format: 'cjs',
-      dir: 'dist',
-      entryFileNames: 'cjs/[name].js',
-    },
-  },
   // esm build
   {
     input: 'src/index.ts',
@@ -35,18 +24,18 @@ export default defineConfig([
       commonjsPlugin(),
       typescriptPlugin({
         declaration: true,
-        declarationDir: 'dist/types',
         outDir: 'dist',
         include: ['src/**/*.ts', 'src/**/*.tsx'],
         exclude: ['src/cli.ts', 'src/modules/liquid-builder/**/*.ts', 'src/modules/liquid-builder/**/*.tsx'],
       }),
       createSwcPlugin(),
-      copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/types/declarations.d.ts' }]),
+      copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' }]),
     ],
     output: {
       format: 'esm',
       dir: 'dist',
-      entryFileNames: 'esm/[name].js',
+      entryFileNames: '[name].js',
+      preserveModules: true,
     },
   },
   // cli app
