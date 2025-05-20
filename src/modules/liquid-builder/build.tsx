@@ -118,7 +118,7 @@ export async function copyAssetFiles({ distDir, themeDir }: { distDir: string; t
   await Promise.all(
     assetFiles.map(async (assetFile) => {
       const relativePath = path.relative(distDir, assetFile)
-      const targetPath = path.join(themeDir, 'assets', relativePath)
+      const targetPath = path.join(themeDir, relativePath)
       const targetDir = path.dirname(targetPath)
 
       await fsPromises.mkdir(targetDir, { recursive: true })
@@ -128,21 +128,20 @@ export async function copyAssetFiles({ distDir, themeDir }: { distDir: string; t
 }
 
 function parseProcessableFilePath(filepath: string) {
-  const splitPath = path.normalize(filepath).split(path.sep)
-  const fileName = splitPath[splitPath.length - 1]!
+  const normalizedPath = path.normalize(filepath)
+  const fileName = path.basename(normalizedPath)
   const fileParts = fileName.split('.')
-  // if it is less than 3 parts, it is not processable
-  if (fileParts.length < 3) {
-    return null
-  }
-  const fileExtension = fileParts[fileParts.length - 1]!
-  const fileSemiExtension = fileParts[fileParts.length - 2]!
-  const isPathProcessable = PROCESSABLE_EXTENSIONS.some((extension) => fileSemiExtension === extension)
-  if (!isPathProcessable) {
-    return null
-  }
+
+  if (fileParts.length < 3) return null
+
+  const fileExtension = fileParts[fileParts.length - 1]
+  const fileSemiExtension = fileParts[fileParts.length - 2]
+
+  if (!fileExtension || !fileSemiExtension) return null
+  if (!PROCESSABLE_EXTENSIONS.includes(fileSemiExtension)) return null
+
   return {
-    fileName: fileParts.slice(0, fileParts.length - 2).join('.'),
+    fileName: fileParts.slice(0, -2).join('.'),
     fileExtension,
     fileSemiExtension,
   }
