@@ -2,6 +2,7 @@ import { defineConfig } from 'rollup'
 import typescriptPlugin from '@rollup/plugin-typescript'
 import swcPlugin from 'rollup-plugin-swc3'
 import * as fs from 'node:fs'
+import * as path from 'node:path'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 
@@ -84,8 +85,12 @@ function copyPlugin(files) {
 
 /**
  * @param {string} id
+ * @returns {boolean}
  */
 function handleExternal(id) {
-  if (id.startsWith('./') || id.startsWith('../') || id.startsWith('/') || id.startsWith('src')) return false
-  return true
+  if (id.startsWith('src')) return false
+  // Handle bare module imports like "react", "@package/core"
+  const isBare = !id.startsWith('.') && !path.isAbsolute(id)
+  if (isBare) return true
+  return false
 }
