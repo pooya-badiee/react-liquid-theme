@@ -4,7 +4,7 @@ import { getConfig } from './config'
 import type { BuildOptions } from './types'
 import chokidar from 'chokidar'
 import { throttle } from './utils'
-import { cleanup, copyAssetFiles, generateLiquidFiles, getAllSnippetFiles } from './build'
+import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
 import { PROCESSABLE_EXTENSIONS } from './constants'
 import chalk from 'chalk'
 
@@ -69,7 +69,7 @@ export function watch(options: BuildOptions) {
     let buildStartTime: number | null = null
     let isFirstBuild = true
 
-    const allSnippetFiles = getAllSnippetFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
+    const allSnippetFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
     const watcher = rollupWatch({

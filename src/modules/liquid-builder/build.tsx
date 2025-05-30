@@ -15,7 +15,7 @@ export async function build(options: BuildOptions) {
   console.log(chalk.blue.bold('🚀 Starting build process'))
 
   const rootPath = path.resolve(process.cwd())
-  const allSnippetFiles = getAllSnippetFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
+  const allSnippetFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
   console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
   const rollupBuild = await rollup(getConfig(allSnippetFiles, { css: options.css }))
@@ -55,7 +55,7 @@ export async function build(options: BuildOptions) {
   }
 }
 
-export function getAllSnippetFiles({ sourcePath, rootPath }: { sourcePath: string; rootPath: string }) {
+export function getAllProcessableFiles({ sourcePath, rootPath }: { sourcePath: string; rootPath: string }) {
   const relativeSource = path.relative(rootPath, sourcePath)
   const patterns = ['ts', 'tsx'].flatMap((ext) =>
     PROCESSABLE_EXTENSIONS.map((type) =>
@@ -139,7 +139,7 @@ export async function copyAssetFiles({
   )
 }
 
-function parseProcessableFilePath(filepath: string) {
+export function parseProcessableFilePath(filepath: string) {
   const normalizedPath = path.normalize(filepath)
   const fileName = path.basename(normalizedPath)
   const fileParts = fileName.split('.')
