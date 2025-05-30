@@ -47,6 +47,7 @@ npx react-liquid-theme setup
 | `--dist`   | `-d`  | string  | `.react-liquid` | Intermediate JS output dir (add to .gitignore) |
 | `--theme`  | `-t`  | string  | `theme`         | Shopify theme output directory                 |
 | `--watch`  | `-w`  | boolean | `false`         | Watch mode for development                     |
+| `--env`    |       | string  | `.env`          | Environment file                               |
 | `--css`    |       | string  | `main.css`      | Output CSS file name                           |
 
 ---
@@ -89,6 +90,7 @@ These React components map to Liquid tags or control flow logic:
 | `LiquidIf`        | `{% if %}`         |
 | `LiquidUnless`    | `{% unless %}`     |
 | `LiquidStatement` | `{% liquid %}`     |
+| `LiquidExpression`| `{{ expression }}` |
 | `LiquidTag`       | Can create any tag |
 
 ---
