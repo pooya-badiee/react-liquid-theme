@@ -1,4 +1,4 @@
-import {expect,test} from 'vitest'
+import { expect, test } from 'vitest'
 import { renderToString } from './render-to-string'
 
 test('output contains no trash comments', async () => {

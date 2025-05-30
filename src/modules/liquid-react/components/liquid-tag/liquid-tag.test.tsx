@@ -11,7 +11,7 @@ test('renders tag with statement', async () => {
   const output = await renderToString(
     <LiquidTag name="if" statement="true">
       Yes
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{% if true %}Yes{% endif %}')
 })
@@ -20,7 +20,7 @@ test('renders with leftTrim', async () => {
   const output = await renderToString(
     <LiquidTag name="if" leftTrim>
       Cond
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{%- if %}Cond{% endif %}')
 })
@@ -29,7 +29,7 @@ test('renders with rightTrim', async () => {
   const output = await renderToString(
     <LiquidTag name="if" rightTrim>
       Block
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{% if %}Block{%- endif %}')
 })
@@ -38,7 +38,7 @@ test('renders with leftBeginTrim', async () => {
   const output = await renderToString(
     <LiquidTag name="if" leftBeginTrim>
       Value
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{% if -%}Value{% endif %}')
 })
@@ -47,7 +47,7 @@ test('renders with rightBeginTrim', async () => {
   const output = await renderToString(
     <LiquidTag name="if" rightBeginTrim>
       Val
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{% if %}Val{% endif -%}')
 })
@@ -56,7 +56,7 @@ test('renders with all trims', async () => {
   const output = await renderToString(
     <LiquidTag name="if" statement="x" leftTrim rightTrim leftBeginTrim rightBeginTrim>
       Yes
-    </LiquidTag>
+    </LiquidTag>,
   )
   expect(output.trim()).toBe('{%- if x -%}Yes{%- endif -%}')
 })

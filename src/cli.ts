@@ -70,8 +70,8 @@ yargs(hideBin(process.argv))
         css: argv.css,
         envFile: argv['env-file'],
       })
-    }
+    },
   )
-  .version('0.4.0')
+  .version('0.4.1')
   .strict()
   .parse()
