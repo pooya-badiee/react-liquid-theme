@@ -73,7 +73,7 @@ export function watch(options: BuildOptions) {
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
     const watcher = rollupWatch({
-      ...getConfig(allSnippetFiles, { css: options.css, cwd: rootPath }),
+      ...getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile }),
       output: {
         dir: path.join(rootPath, options.dist),
         format: 'esm',

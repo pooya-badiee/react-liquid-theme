@@ -41,6 +41,11 @@ yargs(hideBin(process.argv))
           default: false,
           alias: 'w',
         })
+        .option('env-file', {
+          describe: 'Path to the .env file for environment variables',
+          type: 'string',
+          default: '.env',
+        })
         // css output
         .option('css', {
           describe: 'Output CSS file name',
@@ -54,6 +59,7 @@ yargs(hideBin(process.argv))
           source: argv.source,
           theme: argv.theme,
           css: argv.css,
+          envFile: argv['env-file'],
         })
         return
       }
@@ -62,9 +68,10 @@ yargs(hideBin(process.argv))
         source: argv.source,
         theme: argv.theme,
         css: argv.css,
+        envFile: argv['env-file'],
       })
-    },
+    }
   )
-  .version('0.3.0')
+  .version('0.4.0')
   .strict()
   .parse()

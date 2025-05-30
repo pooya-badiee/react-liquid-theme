@@ -1,4 +1,4 @@
-import { test, expect, beforeAll, afterAll } from 'vitest'
+import { test, expect, beforeAll, afterAll, describe } from 'vitest'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { cleanup, getAllProcessableFiles, parseProcessableFilePath } from './build'
@@ -21,37 +21,43 @@ afterAll(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true })
 })
 
-test('returns only files matching processable extensions', () => {
-  const files = getAllProcessableFiles({
-    sourcePath: path.join(tmpDir, 'src', 'snippets'),
-    rootPath: tmpDir,
-  })
+describe('parseProcessableFilePath', () => {
+  test('returns only files matching processable extensions', () => {
+    const files = getAllProcessableFiles({
+      sourcePath: path.join(tmpDir, 'src', 'snippets'),
+      rootPath: tmpDir,
+    })
 
-  const fileNames = files.map((f) => path.basename(f))
+    const fileNames = files.map((f) => path.basename(f))
 
-  expect(fileNames).toEqual(expect.arrayContaining(['button.snippet.tsx', 'button.section.tsx']))
-  expect(fileNames).not.toContain('ignore.txt')
-  expect(fileNames).not.toContain('other.tsx')
-})
-
-test('parses valid processable file path', () => {
-  const parsed = parseProcessableFilePath('button.snippet.tsx')
-  expect(parsed).toEqual({
-    fileName: 'button',
-    fileExtension: 'tsx',
-    fileSemiExtension: 'snippet',
+    expect(fileNames).toEqual(expect.arrayContaining(['button.snippet.tsx', 'button.section.tsx']))
+    expect(fileNames).not.toContain('ignore.txt')
+    expect(fileNames).not.toContain('other.tsx')
   })
 })
 
-test('returns null on invalid extension', () => {
-  expect(parseProcessableFilePath('invalid.file.js')).toBeNull()
+describe('parseProcessableFilePath', () => {
+  test('parses valid processable file path', () => {
+    const parsed = parseProcessableFilePath('button.snippet.tsx')
+    expect(parsed).toEqual({
+      fileName: 'button',
+      fileExtension: 'tsx',
+      fileSemiExtension: 'snippet',
+    })
+  })
+
+  test('returns null on invalid extension', () => {
+    expect(parseProcessableFilePath('invalid.file.js')).toBeNull()
+  })
 })
 
-test('cleans up existing dist folder', () => {
-  const distDir = path.join(process.cwd(), 'test-dist')
-  fs.mkdirSync(distDir, { recursive: true })
-  fs.writeFileSync(path.join(distDir, 'temp.txt'), 'dummy')
+describe('getAllProcessableFiles', () => {
+  test('cleans up existing dist folder', () => {
+    const distDir = path.join(process.cwd(), 'test-dist')
+    fs.mkdirSync(distDir, { recursive: true })
+    fs.writeFileSync(path.join(distDir, 'temp.txt'), 'dummy')
 
-  cleanup({ distDir })
-  expect(fs.existsSync(distDir)).toBe(false)
+    cleanup({ distDir })
+    expect(fs.existsSync(distDir)).toBe(false)
+  })
 })

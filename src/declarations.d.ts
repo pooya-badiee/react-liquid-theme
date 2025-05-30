@@ -15,3 +15,11 @@ declare module '*.css' {
   const content: string
   export default content
 }
+
+interface ImportMetaEnv {
+  [key: string]: string | undefined
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

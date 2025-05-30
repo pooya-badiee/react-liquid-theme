@@ -8,7 +8,7 @@ interface Options {
   output?: string
 }
 
-export function createStylePlugin({ output = 'main.css' }: Options = {}): InputPluginOption {
+export function createStylePlugin({ output = 'main.css' }: Options = {}) {
   const cssFilter = createFilter(['**/*.css'])
   const scssFilter = createFilter(['**/*.scss'])
   const processor = postcss([])
@@ -64,7 +64,7 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}): InputP
         source: finalCss,
       })
     },
-  }
+  } as const satisfies InputPluginOption
 }
 
 const idMap = new Map<string, number>()
