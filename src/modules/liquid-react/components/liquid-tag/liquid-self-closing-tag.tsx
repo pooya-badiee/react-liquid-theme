@@ -1,7 +1,7 @@
-export interface LiquidSelfClosingTagProps {
+import type { BaseSelfClosingLiquidTagProps } from './types'
+
+export interface LiquidSelfClosingTagProps extends BaseSelfClosingLiquidTagProps {
   name: string
-  leftTrim?: boolean
-  rightTrim?: boolean
   statement?: string
 }
 

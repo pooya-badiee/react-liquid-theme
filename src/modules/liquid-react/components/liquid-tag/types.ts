@@ -7,3 +7,7 @@ export interface BaseLiquidTagProps {
   rightBeginTrim?: boolean
   children?: ReactNode
 }
+export interface BaseSelfClosingLiquidTagProps {
+  leftTrim?: boolean
+  rightTrim?: boolean
+}
