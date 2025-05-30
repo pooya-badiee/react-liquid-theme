@@ -12,7 +12,7 @@ export async function renderToString(reactNode: ReactNode): Promise<string> {
     stream.setEncoding('utf8')
     stream.on('data', (chunk: string) => {
       // removes dead html comments
-      html += chunk.replace(/<!--\s*-->|\\x3C!--\s*-->/g, '')
+      html += removeTrashComments(chunk);
     })
     stream.on('end', async () => {
       html = await prettier.format(html, {
@@ -36,4 +36,8 @@ export async function renderToString(reactNode: ReactNode): Promise<string> {
       },
     })
   })
+}
+
+export function removeTrashComments(html: string): string {
+  return html.replace(/<!--\s*-->|\\x3C!--\s*-->/g, '')
 }

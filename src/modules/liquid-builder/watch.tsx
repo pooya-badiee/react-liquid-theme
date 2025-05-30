@@ -37,6 +37,7 @@ async function handleBundleEnd({
       options,
     })
     await copyAssetFiles({
+      rootPath,
       distDir,
       themeDir: path.join(rootPath, options.theme),
     })
