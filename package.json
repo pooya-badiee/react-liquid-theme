@@ -1,20 +1,28 @@
 {
   "name": "react-liquid-theme",
   "description": "A tool for generating shopify .liquid theme files from React components.",
-  "keywords": ["react", "liquid", "theme", "shopify"],
+  "keywords": [
+    "react",
+    "liquid",
+    "theme",
+    "shopify"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/pooya-badiee/react-liquid-theme.git"
   },
   "license": "MIT",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "version": "0.2.6",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
     "format:fix": "biome format --write",
     "lint:fix": "biome lint --unsafe --write",
-    "build": "rollup -c rollup.config.mjs"
+    "build": "rollup -c rollup.config.mjs",
+    "test": "vitest run"
   },
   "bin": {
     "react-liquid-theme": "dist/cli.js"
@@ -33,7 +41,9 @@
   },
   "typesVersions": {
     "*": {
-      "declarations": ["./dist/declarations.d.ts"]
+      "declarations": [
+        "./dist/declarations.d.ts"
+      ]
     }
   },
   "devDependencies": {
@@ -48,7 +58,8 @@
     "react-dom": "^19",
     "tslib": "~2.8",
     "typescript": "~5.8",
-    "sass": "^1"
+    "sass": "^1",
+    "vitest": "^3"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1",
