@@ -1,6 +1,6 @@
-import { LiquidSelfClosingTag, type BaseLiquidTagProps } from '../liquid-tag'
+import { LiquidSelfClosingTag, type BaseSelfClosingLiquidTagProps } from '../liquid-tag'
 
-interface LiquidAssignProps extends BaseLiquidTagProps {
+interface LiquidAssignProps extends BaseSelfClosingLiquidTagProps {
   name: string
 }
 
