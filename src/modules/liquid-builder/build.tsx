@@ -20,7 +20,7 @@ export async function build(options: BuildOptions) {
   console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
   const rollupBuild = await rollup(
-    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile })
+    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile }),
   )
 
   const distDir = path.join(rootPath, options.dist)
@@ -36,7 +36,9 @@ export async function build(options: BuildOptions) {
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
   console.log(
-    chalk.green(`✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`)
+    chalk.green(
+      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`,
+    ),
   )
 
   const processingStartTime = performance.now()
@@ -55,7 +57,7 @@ export async function build(options: BuildOptions) {
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
     console.log(
-      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`)
+      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`),
     )
     console.log('\n\n')
     console.log(chalk.bgGreen.black.bold(' BUILD COMPLETE '))
@@ -69,8 +71,8 @@ export function getAllProcessableFiles({ sourcePath, rootPath }: { sourcePath: s
   const relativeSource = path.relative(rootPath, sourcePath)
   const patterns = ['ts', 'tsx'].flatMap((ext) =>
     PROCESSABLE_EXTENSIONS.map((type) =>
-      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`)
-    )
+      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`),
+    ),
   )
 
   const allSnippetFiles = globSync(patterns, { cwd: rootPath, absolute: true })
@@ -119,7 +121,7 @@ export async function generateLiquidFiles({
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const rollupClientBuild = await rollup(
-      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile })
+      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile }),
     )
     await rollupClientBuild.write({
       format: 'module',
@@ -191,7 +193,7 @@ export async function copyAssetFiles({
 
       await fsPromises.mkdir(targetDir, { recursive: true })
       await fsPromises.copyFile(assetFile, targetPath)
-    })
+    }),
   )
 }
 

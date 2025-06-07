@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 
 export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null
 

@@ -47,19 +47,11 @@ export function getConfig(files: string[], options: { css: string; cwd: string; 
     ],
   } satisfies Parameters<typeof rollup>[0]
 }
-export function getClientConfig(
-  files: string[],
-  options: { css: string; cwd: string; envFile: string }
-) {
+export function getClientConfig(files: string[], options: { css: string; cwd: string; envFile: string }) {
   return {
     input: files,
     jsx: 'react-jsx', // SWC still uses this keyword even for Preact
-    external: [
-      'preact',
-      'preact/jsx-runtime',
-      'preact/hooks',
-      'preact/compat',
-    ],
+    external: ['preact', 'preact/jsx-runtime', 'preact/hooks', 'preact/compat'],
     plugins: [
       createEnvPlugin(options),
       tsconfigPathsPlugin({
@@ -88,9 +80,8 @@ export function getClientConfig(
         },
       }),
     ],
-  } satisfies Parameters<typeof rollup>[0];
+  } satisfies Parameters<typeof rollup>[0]
 }
-
 
 function createEnvPlugin(options: { cwd: string; envFile: string }) {
   const envPath = path.resolve(options.cwd, options.envFile)
