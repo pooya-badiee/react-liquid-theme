@@ -17,21 +17,21 @@ function handleBundleStart(isFirstBuild: boolean): number {
 async function handleBundleEnd({
   buildStartTime,
   isFirstBuild,
-  allSnippetFiles,
+  allProcessableFiles,
   distDir,
   rootPath,
   options,
 }: {
   buildStartTime: number
   isFirstBuild: boolean
-  allSnippetFiles: string[]
+  allProcessableFiles: string[]
   distDir: string
   rootPath: string
   options: BuildOptions
 }): Promise<boolean> {
   try {
     await generateLiquidFiles({
-      allSnippetFiles,
+      allProcessableFiles,
       distDir,
       rootPath,
       options,
@@ -69,11 +69,11 @@ export function watch(options: BuildOptions) {
     let buildStartTime: number | null = null
     let isFirstBuild = true
 
-    const allSnippetFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
-    console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
+    const allProcessableFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
+    console.log(chalk.cyan(`📁 Found ${chalk.bold(allProcessableFiles.length)} snippet files`))
 
     const watcher = rollupWatch({
-      ...getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile }),
+      ...getConfig(allProcessableFiles, { css: options.css, cwd: rootPath, envFile: options.envFile }),
       output: {
         dir: path.join(rootPath, options.dist),
         format: 'esm',
@@ -91,7 +91,7 @@ export function watch(options: BuildOptions) {
         isFirstBuild = await handleBundleEnd({
           buildStartTime,
           isFirstBuild,
-          allSnippetFiles,
+          allProcessableFiles,
           distDir,
           rootPath,
           options,

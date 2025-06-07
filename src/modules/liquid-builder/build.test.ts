@@ -13,6 +13,7 @@ beforeAll(() => {
   fs.writeFileSync(path.join(snippetsDir, 'button.snippet.tsx'), '')
   fs.writeFileSync(path.join(snippetsDir, 'button.section.tsx'), '')
   fs.writeFileSync(path.join(snippetsDir, 'header.random.ts'), '')
+  fs.writeFileSync(path.join(snippetsDir, 'button.client.snippet.tsx'), '')
   fs.writeFileSync(path.join(snippetsDir, 'ignore.txt'), '')
   fs.writeFileSync(path.join(snippetsDir, 'other.tsx'), '') // Missing semi-extension
 })
@@ -43,11 +44,25 @@ describe('parseProcessableFilePath', () => {
       fileName: 'button',
       fileExtension: 'tsx',
       fileSemiExtension: 'snippet',
+      isClient: false,
+      sourceFilePath: 'button.snippet.tsx',
     })
   })
 
   test('returns null on invalid extension', () => {
     expect(parseProcessableFilePath('invalid.file.js')).toBeNull()
+  })
+
+  test('determines client-side files correctly', () => {
+    const parsed = parseProcessableFilePath('button.client.snippet.tsx')
+    console.log(parsed)
+    expect(parsed).toEqual({
+      fileName: 'button',
+      fileExtension: 'tsx',
+      fileSemiExtension: 'snippet',
+      isClient: true,
+      sourceFilePath: 'button.client.snippet.tsx',
+    })
   })
 })
 

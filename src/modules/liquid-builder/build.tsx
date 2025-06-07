@@ -19,7 +19,7 @@ export async function build(options: BuildOptions) {
   console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
   const rollupBuild = await rollup(
-    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile }),
+    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile })
   )
 
   const distDir = path.join(rootPath, options.dist)
@@ -35,21 +35,19 @@ export async function build(options: BuildOptions) {
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
   console.log(
-    chalk.green(
-      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`,
-    ),
+    chalk.green(`✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`)
   )
 
   const processingStartTime = performance.now()
 
   try {
-    await generateLiquidFiles({ distDir, allSnippetFiles, rootPath, options })
+    await generateLiquidFiles({ distDir, allProcessableFiles: allSnippetFiles, rootPath, options })
     await copyAssetFiles({ distDir, themeDir: path.join(rootPath, options.theme), rootPath })
     const processingTime = Math.round((performance.now() - processingStartTime) * 100) / 100
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
     console.log(
-      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`),
+      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`)
     )
     console.log('\n\n')
     console.log(chalk.bgGreen.black.bold(' BUILD COMPLETE '))
@@ -63,8 +61,8 @@ export function getAllProcessableFiles({ sourcePath, rootPath }: { sourcePath: s
   const relativeSource = path.relative(rootPath, sourcePath)
   const patterns = ['ts', 'tsx'].flatMap((ext) =>
     PROCESSABLE_EXTENSIONS.map((type) =>
-      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`),
-    ),
+      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`)
+    )
   )
 
   const allSnippetFiles = globSync(patterns, { cwd: rootPath, absolute: true })
@@ -78,16 +76,19 @@ export function cleanup({ distDir }: { distDir: string }) {
 
 export async function generateLiquidFiles({
   distDir,
-  allSnippetFiles,
+  allProcessableFiles,
   rootPath,
   options,
 }: {
   distDir: string
-  allSnippetFiles: string[]
+  allProcessableFiles: string[]
   rootPath: string
   options: BuildOptions
 }) {
-  for (const { filePath, targetFileName, targetFolder } of getAllToExecuteFiles({ distDir, allSnippetFiles })) {
+  for (const { filePath, targetFileName, targetFolder } of getAllToExecuteFiles({
+    distDir,
+    allProcessableFiles,
+  })) {
     const module = await import(pathToFileURL(filePath).toString())
     const Component = module.default
     const reactOutputString = await renderToString(<Component />, { leaveComment: true })
@@ -103,19 +104,45 @@ export async function generateLiquidFiles({
   }
 }
 
-function getAllToExecuteFiles({ distDir, allSnippetFiles }: { distDir: string; allSnippetFiles: string[] }) {
-  const parsedSnippetFiles = allSnippetFiles.map((filePath) => parseProcessableFilePath(filePath))
-  const allDistFiles = parsedSnippetFiles
-    .filter((file) => !!file)
-    .map((file) => ({
-      filePath: path.join(distDir, `${file.fileName}.${file.fileSemiExtension}.js`),
-      fileName: `${file.fileName}.${file.fileSemiExtension}.js`,
-      targetFileName: `${file.fileName}.liquid`,
-      targetFolder: `${file.fileSemiExtension}s`,
-    }))
+function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: string; allProcessableFiles: string[] }) {
+  const parsedSnippetFiles = allProcessableFiles.map((filePath) => parseProcessableFilePath(filePath))
+  const groupedFiles: Record<
+    string,
+    {
+      client?: (typeof parsedSnippetFiles)[0]
+      server?: (typeof parsedSnippetFiles)[0]
+    }
+  > = {}
 
-  return allDistFiles
+  for (const file of parsedSnippetFiles) {
+    if (!file) continue
+    const key = file.fileName
+    groupedFiles[key] ??= {}
+    groupedFiles[key][file.isClient ? 'client' : 'server'] ??= file
+  }
+
+  type FileInfo = {
+    filePath: string
+    fileName: string
+    targetFileName: string
+    targetFolder: string
+    clientFilePath: string | null
+  }
+  const fileInfos: FileInfo[] = []
+  for (const { client, server } of Object.values(groupedFiles)) {
+    if (!server) continue // Skip if no server file
+    fileInfos.push({
+      filePath: path.join(distDir, `${server.fileName}.${server.fileSemiExtension}.js`),
+      fileName: `${server.fileName}.${server.fileSemiExtension}.js`,
+      targetFileName: `${server.fileName}.liquid`,
+      targetFolder: `${server.fileSemiExtension}s`,
+      clientFilePath: client?.sourceFilePath || null,
+    })
+  }
+
+  return fileInfos
 }
+
 export async function copyAssetFiles({
   distDir,
   themeDir,
@@ -139,26 +166,30 @@ export async function copyAssetFiles({
 
       await fsPromises.mkdir(targetDir, { recursive: true })
       await fsPromises.copyFile(assetFile, targetPath)
-    }),
+    })
   )
 }
 
 export function parseProcessableFilePath(filepath: string) {
   const normalizedPath = path.normalize(filepath)
-  const fileName = path.basename(normalizedPath)
-  const fileParts = fileName.split('.')
+  const parts = path.basename(normalizedPath).split('.')
 
-  if (fileParts.length < 3) return null
+  if (parts.length < 3) return null
 
-  const fileExtension = fileParts[fileParts.length - 1]
-  const fileSemiExtension = fileParts[fileParts.length - 2]
+  // is it file.client.snippet.tsx or file.snippet.tsx
+  const isClient = parts[parts.length - 3] === 'client'
+  const fileExtension = parts[parts.length - 1]
+  const fileSemiExtension = parts[parts.length - 2]
 
   if (!fileExtension || !fileSemiExtension) return null
   if (!PROCESSABLE_EXTENSIONS.includes(fileSemiExtension)) return null
 
+  const fileName = parts.slice(0, -2).join('.')
   return {
-    fileName: fileParts.slice(0, -2).join('.'),
+    fileName: fileName.replace(/\.client$/, ''), // Remove .client if present
     fileExtension,
     fileSemiExtension,
+    isClient,
+    sourceFilePath: normalizedPath,
   }
 }
