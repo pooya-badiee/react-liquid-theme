@@ -68,6 +68,17 @@ export function setup() {
         }`,
     )
   }
+  // .gitignore file
+  const gitignorePath = path.join(root, '.gitignore')
+  if (!fs.existsSync(gitignorePath)) {
+    fs.writeFileSync(
+      gitignorePath,
+      dedent`
+        node_modules
+        .react-liquid
+      `,
+    )
+  }
 
   // Create global.d.ts file with reference if it doesn't exist
   if (!fs.existsSync(globalTypes)) {
