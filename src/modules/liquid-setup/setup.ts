@@ -54,7 +54,7 @@ export function setup() {
           )
         }
           
-        export default ExampleSnippet`,
+        export default ExampleSnippet`
     )
   }
 
@@ -65,7 +65,7 @@ export function setup() {
       dedent`
         .example {
           color: red;
-        }`,
+        }`
     )
   }
   // .gitignore file
@@ -76,7 +76,19 @@ export function setup() {
       dedent`
         node_modules
         .react-liquid
-      `,
+      `
+    )
+  }
+
+  // react-liquid-theme.js config file
+  const configFilePath = path.join(root, 'react-liquid-theme.js')
+  if (!fs.existsSync(configFilePath)) {
+    fs.writeFileSync(
+      configFilePath,
+      dedent`
+      import { defineOptions } from 'react-liquid-theme'
+      export default defineOptions({})
+      `
     )
   }
 
