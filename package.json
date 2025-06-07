@@ -53,6 +53,7 @@
     "vitest": "^3"
   },
   "dependencies": {
+    "zod": "^3",
     "@rollup/plugin-commonjs": "^28",
     "@rollup/plugin-node-resolve": "^16",
     "@rollup/plugin-replace": "^6",

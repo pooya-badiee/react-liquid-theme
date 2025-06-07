@@ -1,7 +1,11 @@
 import yargs from 'yargs'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { hideBin } from 'yargs/helpers'
 import { build, watch } from './modules/liquid-builder'
 import { setup } from './modules/liquid-setup/setup'
+import { z } from 'zod/v4'
+import { pathToFileURL } from 'node:url'
 
 yargs(hideBin(process.argv))
   .help()
@@ -17,21 +21,18 @@ yargs(hideBin(process.argv))
         .option('dist', {
           describe: 'Directory where compiled JS files (for liquid generation) are output',
           type: 'string',
-          default: '.react-liquid',
           alias: 'd',
         })
         // where the react components are
         .option('source', {
           describe: 'Source directory containing React components',
           type: 'string',
-          default: 'src',
           alias: 's',
         })
         // where the shopify theme is
         .option('theme', {
           describe: 'Shopify theme directory',
           type: 'string',
-          default: 'theme',
           alias: 't',
         })
         // watch
@@ -41,7 +42,7 @@ yargs(hideBin(process.argv))
           default: false,
           alias: 'w',
         })
-        .option('env-file', {
+        .option('env', {
           describe: 'Path to the .env file for environment variables',
           type: 'string',
           default: '.env',
@@ -58,28 +59,64 @@ yargs(hideBin(process.argv))
           type: 'string',
           default: 'main.js',
         }),
-    (argv) => {
+    async (argv) => {
+      const options = await loadSettings(argv)
       if (argv.watch) {
         watch({
-          dist: argv.dist,
-          source: argv.source,
-          theme: argv.theme,
-          css: argv.css,
-          envFile: argv['env-file'],
-          jsFile: argv.js,
+          dist: options.dist,
+          source: options.source,
+          theme: options.theme,
+          css: options.css,
+          envFile: options.env,
+          jsFile: options.js,
         })
         return
       }
       build({
-        dist: argv.dist,
-        source: argv.source,
-        theme: argv.theme,
-        css: argv.css,
-        envFile: argv['env-file'],
-        jsFile: argv.js,
+        dist: options.dist,
+        source: options.source,
+        theme: options.theme,
+        css: options.css,
+        envFile: options.env,
+        jsFile: options.js,
       })
-    },
+    }
   )
   .version('0.5.0')
   .strict()
   .parse()
+
+type ArgOptions = {
+  dist?: string | undefined
+  source?: string | undefined
+  theme?: string | undefined
+  css?: string | undefined
+  env?: string | undefined
+  js?: string | undefined
+}
+
+const optionsSchema = z.object({
+  dist: z.string().default('.react-liquid'),
+  source: z.string().default('src'),
+  theme: z.string().default('theme'),
+  css: z.string().default('main.css'),
+  env: z.string().default('.env'),
+  js: z.string().default('main.js'),
+})
+
+export async function loadSettings(options: ArgOptions) {
+  const configFilePath = path.join(process.cwd(), 'react-liquid-theme.js')
+  let configFileData: ArgOptions = {}
+
+  if (fs.existsSync(configFilePath)) {
+    const module = await import(pathToFileURL(configFilePath).toString())
+    if (module.default) {
+      configFileData = module.default as ArgOptions
+    }
+  }
+
+  return optionsSchema.parse({
+    ...configFileData,
+    ...options,
+  })
+}
