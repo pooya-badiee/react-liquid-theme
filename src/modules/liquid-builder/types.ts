@@ -4,4 +4,5 @@ export type BuildOptions = {
   theme: string
   css: string
   envFile: string
+  jsFile: string
 }

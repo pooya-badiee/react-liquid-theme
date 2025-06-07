@@ -51,6 +51,12 @@ yargs(hideBin(process.argv))
           describe: 'Output CSS file name',
           type: 'string',
           default: 'main.css',
+        })
+        // js output
+        .option('js', {
+          describe: 'Output JS file name',
+          type: 'string',
+          default: 'main.js',
         }),
     (argv) => {
       if (argv.watch) {
@@ -60,6 +66,7 @@ yargs(hideBin(process.argv))
           theme: argv.theme,
           css: argv.css,
           envFile: argv['env-file'],
+          jsFile: argv.js,
         })
         return
       }
@@ -69,6 +76,7 @@ yargs(hideBin(process.argv))
         theme: argv.theme,
         css: argv.css,
         envFile: argv['env-file'],
+        jsFile: argv.js,
       })
     },
   )

@@ -14,7 +14,7 @@ npm install react-liquid-theme
 
 ## 🚀 Usage
 
->⚠️ **Note:** This package only supports ESM (ECMAScript Modules). It will **not** work with CommonJS.
+> ⚠️ **Note:** This package only supports ESM (ECMAScript Modules). It will **not** work with CommonJS.
 
 Include this in a definition file (e.g., `src/declarations.d.ts`).
 
@@ -49,18 +49,21 @@ npx react-liquid-theme setup
 | `--watch`  | `-w`  | boolean | `false`         | Watch mode for development                     |
 | `--env`    |       | string  | `.env`          | Environment file                               |
 | `--css`    |       | string  | `main.css`      | Output CSS file name                           |
+| `--js`     |       | string  | `main.js`       | Output JS file name                            |
 
 ---
 
 ## 📁 File Types
 
-Use file suffixes to automatically route to Shopify theme folders:
+Use file suffixes to automatically route to Shopify theme folders,
+the `.client.extension.ts` files will be compiled to a single `main.js` file in the `assets` directory.
 
-| File Pattern     | Output Directory  |
-| ---------------- | ----------------- |
-| `*.snippet.tsx`  | `theme/snippets`  |
-| `*.section.tsx`  | `theme/sections`  |
-| `*.template.tsx` | `theme/templates` |
+| File Pattern                             | Output Directory  |
+| ---------------------------------------- | ----------------- |
+| `*.snippet.tsx`                          | `theme/snippets`  |
+| `*.section.tsx`                          | `theme/sections`  |
+| `*.template.tsx`                         | `theme/templates` |
+| `*.{section,template,snippet}.client.ts` | `assets/main.js`  |
 
 ---
 
@@ -80,18 +83,18 @@ Import styles into React components, and they will be bundled into `main.css` in
 
 These React components map to Liquid tags or control flow logic:
 
-| Component         | Description        |
-| ----------------- | ------------------ |
-| `LiquidAssign`    | `{% assign %}`     |
-| `LiquidBreak`     | `{% break %}`      |
-| `LiquidCapture`   | `{% capture %}`    |
-| `LiquidContinue`  | `{% continue %}`   |
-| `LiquidFor`       | `{% for %}`        |
-| `LiquidIf`        | `{% if %}`         |
-| `LiquidUnless`    | `{% unless %}`     |
-| `LiquidStatement` | `{% liquid %}`     |
-| `LiquidExpression`| `{{ expression }}` |
-| `LiquidTag`       | Can create any tag |
+| Component          | Description        |
+| ------------------ | ------------------ |
+| `LiquidAssign`     | `{% assign %}`     |
+| `LiquidBreak`      | `{% break %}`      |
+| `LiquidCapture`    | `{% capture %}`    |
+| `LiquidContinue`   | `{% continue %}`   |
+| `LiquidFor`        | `{% for %}`        |
+| `LiquidIf`         | `{% if %}`         |
+| `LiquidUnless`     | `{% unless %}`     |
+| `LiquidStatement`  | `{% liquid %}`     |
+| `LiquidExpression` | `{{ expression }}` |
+| `LiquidTag`        | Can create any tag |
 
 ---
 

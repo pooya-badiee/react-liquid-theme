@@ -35,6 +35,8 @@ async function handleBundleEnd({
       distDir,
       rootPath,
       options,
+      sourcePath: options.source,
+      jsOutputFile: options.jsFile,
     })
     await copyAssetFiles({
       rootPath,

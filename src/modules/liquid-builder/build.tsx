@@ -4,11 +4,12 @@ import { glob, globSync } from 'glob'
 import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import { renderToString } from './render-to-string'
-import { getConfig } from './config'
+import { getClientConfig, getConfig } from './config'
 import type { BuildOptions } from './types'
 import chalk from 'chalk'
 import { PROCESSABLE_EXTENSIONS } from './constants'
 import { pathToFileURL } from 'node:url'
+import { getOneFileThatImportsAllFiles } from './utils'
 
 export async function build(options: BuildOptions) {
   const startTime = performance.now()
@@ -41,7 +42,14 @@ export async function build(options: BuildOptions) {
   const processingStartTime = performance.now()
 
   try {
-    await generateLiquidFiles({ distDir, allProcessableFiles: allSnippetFiles, rootPath, options })
+    await generateLiquidFiles({
+      distDir,
+      allProcessableFiles: allSnippetFiles,
+      rootPath,
+      options,
+      sourcePath: options.source,
+      jsOutputFile: options.jsFile,
+    })
     await copyAssetFiles({ distDir, themeDir: path.join(rootPath, options.theme), rootPath })
     const processingTime = Math.round((performance.now() - processingStartTime) * 100) / 100
     const formattedProcessingTime =
@@ -79,16 +87,22 @@ export async function generateLiquidFiles({
   allProcessableFiles,
   rootPath,
   options,
+  sourcePath,
+  jsOutputFile,
 }: {
   distDir: string
   allProcessableFiles: string[]
   rootPath: string
   options: BuildOptions
+  sourcePath: string
+  jsOutputFile: string
 }) {
-  for (const { filePath, targetFileName, targetFolder } of getAllToExecuteFiles({
-    distDir,
-    allProcessableFiles,
-  })) {
+  const filesToExecute = getAllToExecuteFiles({ distDir, allProcessableFiles })
+  const clientFiles: string[] = []
+  for (const { filePath, targetFileName, targetFolder, clientFilePath } of filesToExecute) {
+    if (clientFilePath) {
+      clientFiles.push(clientFilePath)
+    }
     const module = await import(pathToFileURL(filePath).toString())
     const Component = module.default
     const reactOutputString = await renderToString(<Component />, { leaveComment: true })
@@ -101,6 +115,17 @@ export async function generateLiquidFiles({
     }
 
     fs.writeFileSync(outputFilePath, reactOutputString)
+  }
+  if (clientFiles.length) {
+    const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
+    const rollupClientBuild = await rollup(
+      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile })
+    )
+    await rollupClientBuild.write({
+      format: 'module',
+      file: path.join(distDir, 'assets', jsOutputFile),
+    })
+    cleanup()
   }
 }
 
