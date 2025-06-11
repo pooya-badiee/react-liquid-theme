@@ -43,8 +43,8 @@ export function setup() {
           },
         },
         null,
-        2,
-      ),
+        2
+      )
     )
   }
 
@@ -57,7 +57,8 @@ export function setup() {
   if (!fs.existsSync(snippetFile)) {
     fs.writeFileSync(
       snippetFile,
-      dedent`
+      dedent`  
+        import { LiquidBreak, LiquidFor, LiquidExpression } from 'react-liquid-theme'
         import classes from './counter.snippet.module.scss'
         import { defineJsxTag } from 'react-liquid-theme/utils'
 
@@ -65,15 +66,30 @@ export function setup() {
 
         function CounterSnippet() {
           return (
-            <AppCounter className={classes.counter}>
-              <span className="count">0</span>
-              <button className="increment" type="button">Increment</button>
-              <button className="decrement" type="button">Decrement</button>
-            </AppCounter>
+            <ul>
+              <LiquidFor statement="index in (1..5)">
+                <li>
+                  <LiquidExpression expression="index" />
+                  <AppCounter className={classes.counter}>
+                    <LiquidBreak />
+                    <span className="count">
+                      <LiquidExpression expression="index" />
+                    </span>
+                    <button className="increment" type="button">
+                      Increment
+                    </button>
+                    <button className="decrement" type="button">
+                      Decrement
+                    </button>
+                  </AppCounter>
+                </li>
+              </LiquidFor>
+            </ul>
           )
         }
 
-        export default CounterSnippet`,
+        export default CounterSnippet
+      `
     )
   }
   // snippet client file
@@ -107,7 +123,7 @@ export function setup() {
         }
 
         customElements.define('app-counter', CounterElement)
-      `,
+      `
     )
   }
 
@@ -118,7 +134,7 @@ export function setup() {
       dedent`
         .counter {
           display: flex;
-        }`,
+        }`
     )
   }
   // .gitignore file
@@ -129,7 +145,7 @@ export function setup() {
       dedent`
         node_modules
         .react-liquid
-      `,
+      `
     )
   }
 
@@ -142,7 +158,7 @@ export function setup() {
       import { defineOptions } from 'react-liquid-theme/config'
 
       export default defineOptions({})
-      `,
+      `
     )
   }
 
