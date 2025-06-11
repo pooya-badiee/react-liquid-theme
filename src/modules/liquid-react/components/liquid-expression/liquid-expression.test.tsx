@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { renderToString } from '../../../liquid-builder/render-to-string'
-import LiquidExpression from './liquid-expression'
+import { LiquidExpression } from './liquid-expression'
 
 test('liquid expression matches the snapshot', async () => {
   const output = await renderToString(<LiquidExpression expression="user.name" />)
