@@ -1,2 +1,2 @@
 export * from './modules/liquid-react'
-export { defineOptions } from './modules/liquid-cli'
+export { defineOptions } from './modules/liquid-cli/define-schema'
