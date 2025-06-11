@@ -33,7 +33,15 @@ export function setup() {
     fs.writeFileSync(
       tsconfigPath,
       JSON.stringify(
-        { compilerOptions: { jsx: 'preserve', module: 'preserve', moduleResolution: 'bundler', skipLibCheck: true } },
+        {
+          compilerOptions: {
+            jsx: 'preserve',
+            module: 'preserve',
+            moduleResolution: 'bundler',
+            skipLibCheck: true,
+            target: 'esnext',
+          },
+        },
         null,
         2
       )
@@ -75,26 +83,26 @@ export function setup() {
       snippetClientFile,
       dedent`
         class CounterElement extends HTMLElement {
-          count = 0
+          #count = 0
 
           connectedCallback() {
-            this.render()
-            this.querySelector('.increment')!.addEventListener('click', () => this.increment())
-            this.querySelector('.decrement')!.addEventListener('click', () => this.decrement())
+            this.#render()
+            this.querySelector('.increment')!.addEventListener('click', () => this.#increment())
+            this.querySelector('.decrement')!.addEventListener('click', () => this.#decrement())
           }
 
-          increment() {
-            this.count++
-            this.render()
+          #increment() {
+            this.#count++
+            this.#render()
           }
 
-          decrement() {
-            this.count--
-            this.render()
+          #decrement() {
+            this.#count--
+            this.#render()
           }
 
-          render() {
-            this.querySelector('.count')!.textContent = this.count.toString()
+          #render() {
+            this.querySelector('.count')!.textContent = this.#count.toString()
           }
         }
 

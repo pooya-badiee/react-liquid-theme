@@ -66,7 +66,7 @@ export function getClientConfig(files: string[], options: { css: string; cwd: st
       swc({
         minify: true,
         jsc: {
-          target: 'es2019',
+          target: 'es2020',
           parser: {
             syntax: 'typescript',
             tsx: true,
