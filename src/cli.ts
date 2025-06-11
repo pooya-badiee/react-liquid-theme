@@ -1,3 +1,3 @@
-import { setupCli } from "./modules/liquid-cli";
+import { setupCli } from './modules/liquid-cli'
 
 setupCli()

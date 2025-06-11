@@ -18,7 +18,7 @@ try {
 export default defineConfig([
   // esm build
   {
-    input: ['src/index.ts', 'src/utils.ts'],
+    input: ['src/index.ts', 'src/utils.ts', 'src/config.ts'],
     external: handleExternal,
     plugins: [
       nodeResolvePlugin(),

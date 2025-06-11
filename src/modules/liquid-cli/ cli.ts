@@ -95,7 +95,7 @@ export function setupCli() {
           envFile: options.env,
           jsFile: options.js,
         })
-      }
+      },
     )
     .version('0.7.0')
     .strict()

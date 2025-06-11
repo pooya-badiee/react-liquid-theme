@@ -7,5 +7,5 @@
  * <MyTag data-value="123" />
  */
 export function defineJsxTag(tagName: string) {
-  return tagName as 'div';
+  return tagName as 'div'
 }
