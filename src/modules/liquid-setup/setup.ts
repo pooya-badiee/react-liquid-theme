@@ -9,8 +9,8 @@ export function setup() {
   const packageJsonPath = path.join(root, 'package.json')
   const tsconfigPath = path.join(root, 'tsconfig.json')
   const srcDir = path.join(root, 'src')
-  const snippetFile = path.join(srcDir, 'example.snippet.tsx')
-  const snippetStyle = path.join(srcDir, 'example.snippet.module.scss')
+  const snippetFile = path.join(srcDir, 'counter.snippet.tsx')
+  const snippetStyle = path.join(srcDir, 'counter.snippet.module.scss')
   const globalTypes = path.join(srcDir, 'global.d.ts')
 
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
@@ -30,7 +30,14 @@ export function setup() {
 
   // Create tsconfig.json if it doesn't exist
   if (!fs.existsSync(tsconfigPath)) {
-    fs.writeFileSync(tsconfigPath, JSON.stringify({ compilerOptions: { jsx: 'preserve' } }, null, 2))
+    fs.writeFileSync(
+      tsconfigPath,
+      JSON.stringify(
+        { compilerOptions: { jsx: 'preserve', module: 'preserve', moduleResolution: 'bundler', skipLibCheck: true } },
+        null,
+        2
+      )
+    )
   }
 
   // Create src directory if it doesn't exist (with recursive option)
@@ -43,18 +50,56 @@ export function setup() {
     fs.writeFileSync(
       snippetFile,
       dedent`
-        import classes from './example.snippet.module.scss'
+        import classes from './counter.snippet.module.scss'
+        import { defineJsxTag } from 'react-liquid-theme/utils'
 
-        function ExampleSnippet() {
+        const AppCounter = defineJsxTag('app-counter')
+
+        function CounterSnippet() {
           return (
-            <div className={classes.example}>
-              <h1>Hello World</h1>
-              <p>This is an example snippet</p>
-            </div>
+            <AppCounter className={classes.counter}>
+              <span className="count">0</span>
+              <button className="increment" type="button">Increment</button>
+              <button className="decrement" type="button">Decrement</button>
+            </AppCounter>
           )
         }
-          
-        export default ExampleSnippet`
+
+        export default CounterSnippet`
+    )
+  }
+  // snippet client file
+  const snippetClientFile = path.join(srcDir, 'counter.client.snippet.ts')
+  if (!fs.existsSync(snippetClientFile)) {
+    fs.writeFileSync(
+      snippetClientFile,
+      dedent`
+        class CounterElement extends HTMLElement {
+          count = 0
+
+          connectedCallback() {
+            this.render()
+            this.querySelector('.increment')!.addEventListener('click', () => this.increment())
+            this.querySelector('.decrement')!.addEventListener('click', () => this.decrement())
+          }
+
+          increment() {
+            this.count++
+            this.render()
+          }
+
+          decrement() {
+            this.count--
+            this.render()
+          }
+
+          render() {
+            this.querySelector('.count')!.textContent = this.count.toString()
+          }
+        }
+
+        customElements.define('app-counter', CounterElement)
+      `
     )
   }
 
@@ -63,8 +108,8 @@ export function setup() {
     fs.writeFileSync(
       snippetStyle,
       dedent`
-        .example {
-          color: red;
+        .counter {
+          display: flex;
         }`
     )
   }
@@ -94,6 +139,6 @@ export function setup() {
 
   // Create global.d.ts file with reference if it doesn't exist
   if (!fs.existsSync(globalTypes)) {
-    fs.writeFileSync(globalTypes, '/// <reference types="react-liquid-theme/declarations" />')
+    fs.writeFileSync(globalTypes, `/// <reference types="react-liquid-theme/declarations" />`)
   }
 }

@@ -38,6 +38,7 @@ export async function renderToString(
         tabWidth: 2,
         singleQuote: true,
         trailingComma: 'all',
+        htmlWhitespaceSensitivity: 'ignore',
       })
       resolve(html)
     })

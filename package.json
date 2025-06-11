@@ -1,14 +1,21 @@
 {
   "name": "react-liquid-theme",
   "description": "A tool for generating shopify .liquid theme files from React components.",
-  "keywords": ["react", "liquid", "theme", "shopify"],
+  "keywords": [
+    "react",
+    "liquid",
+    "theme",
+    "shopify"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/pooya-badiee/react-liquid-theme.git"
   },
   "license": "MIT",
-  "files": ["dist"],
-  "version": "0.5.0",
+  "files": [
+    "dist"
+  ],
+  "version": "0.6.0",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
@@ -30,11 +37,17 @@
     },
     "./declarations": {
       "types": "./dist/declarations.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
     }
   },
   "typesVersions": {
     "*": {
-      "declarations": ["./dist/declarations.d.ts"]
+      "declarations": [
+        "./dist/declarations.d.ts"
+      ]
     }
   },
   "devDependencies": {
@@ -53,7 +66,6 @@
     "vitest": "^3"
   },
   "dependencies": {
-    "zod": "^3",
     "@rollup/plugin-commonjs": "^28",
     "@rollup/plugin-node-resolve": "^16",
     "@rollup/plugin-replace": "^6",
@@ -62,6 +74,7 @@
     "chalk": "^4",
     "chokidar": "^4",
     "dedent": "^1",
+    "dotenv": "^16",
     "glob": "^11",
     "postcss": "^8",
     "postcss-modules": "^6",
@@ -70,7 +83,7 @@
     "rollup-plugin-swc3": "^0.12.1",
     "rollup-plugin-tsconfig-paths": "^1",
     "yargs": "^17",
-    "dotenv": "^16"
+    "zod": "^3"
   },
   "peerDependencies": {
     "react": ">=19",
