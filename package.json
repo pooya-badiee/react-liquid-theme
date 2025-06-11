@@ -15,7 +15,7 @@
   "files": [
     "dist"
   ],
-  "version": "0.6.0",
+  "version": "0.6.1",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
@@ -83,7 +83,7 @@
     "rollup-plugin-swc3": "^0.12.1",
     "rollup-plugin-tsconfig-paths": "^1",
     "yargs": "^17",
-    "zod": "^3"
+    "zod": ">=3.25.0"
   },
   "peerDependencies": {
     "react": ">=19",
