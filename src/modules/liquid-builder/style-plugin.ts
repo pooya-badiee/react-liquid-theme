@@ -6,9 +6,14 @@ import postCssModules from 'postcss-modules'
 
 interface Options {
   output?: string
+  env?: Record<string, string>
 }
 
-export function createStylePlugin({ output = 'main.css' }: Options = {}) {
+export function createStylePlugin({ output = 'main.css', env = {} }: Options = {}) {
+  const SASS_ENV_STRING = `$env: (${Object.entries(env)
+    .map(([key, value]) => `${key}: "${String(value).replace(/"/g, '\\"')}"`)
+    .join(', ')});`
+
   const cssFilter = createFilter(['**/*.css'])
   const scssFilter = createFilter(['**/*.scss'])
   const processor = postcss([])
@@ -35,7 +40,8 @@ export function createStylePlugin({ output = 'main.css' }: Options = {}) {
       const isModule = id.includes('.module.')
       let compiledCode = code
       if (isScss) {
-        compiledCode = compileSass(code).css
+        // Inject env variables into SCSS code
+        compiledCode = compileSass(`${SASS_ENV_STRING}${code}`).css
       }
       const result = await (isModule ? modulesProcessor : processor).process(compiledCode, { from: id })
       collectedCss.push(result.css)

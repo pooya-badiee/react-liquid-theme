@@ -10,6 +10,7 @@ import { parse as parseEnv } from 'dotenv'
 import { createStylePlugin } from './style-plugin'
 
 export function getConfig(files: string[], options: { css: string; cwd: string; envFile: string }) {
+  const env = getEnvFromPath(options.envFile)
   return {
     input: files,
     jsx: 'react-jsx',
@@ -22,13 +23,13 @@ export function getConfig(files: string[], options: { css: string; cwd: string; 
       'react-dom/server',
     ],
     plugins: [
-      createEnvPlugin(options),
+      createEnvPlugin({ env }),
       tsconfigPathsPlugin({
         tsConfigPath: path.join(options.cwd, 'tsconfig.json'),
       }),
       nodeResolvePlugin(),
       commonjsPlugin(),
-      createStylePlugin({ output: options.css }),
+      createStylePlugin({ output: options.css, env }),
       swc({
         jsc: {
           parser: {
@@ -48,12 +49,13 @@ export function getConfig(files: string[], options: { css: string; cwd: string; 
   } satisfies Parameters<typeof rollup>[0]
 }
 export function getClientConfig(files: string[], options: { css: string; cwd: string; envFile: string }) {
+  const env = getEnvFromPath(options.envFile)
   return {
     input: files,
     jsx: 'react-jsx', // SWC still uses this keyword even for Preact
     external: ['preact', 'preact/jsx-runtime', 'preact/hooks', 'preact/compat'],
     plugins: [
-      createEnvPlugin(options),
+      createEnvPlugin({ env }),
       tsconfigPathsPlugin({
         tsConfigPath: path.join(options.cwd, 'tsconfig.json'),
       }),
@@ -62,7 +64,7 @@ export function getClientConfig(files: string[], options: { css: string; cwd: st
         browser: true,
       }),
       commonjsPlugin(),
-      createStylePlugin({ output: options.css }),
+      createStylePlugin({ output: options.css, env }),
       swc({
         minify: true,
         jsc: {
@@ -84,14 +86,14 @@ export function getClientConfig(files: string[], options: { css: string; cwd: st
   } satisfies Parameters<typeof rollup>[0]
 }
 
-function createEnvPlugin(options: { cwd: string; envFile: string }) {
-  const envPath = path.resolve(options.cwd, options.envFile)
-  let env: Record<string, string> = {}
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8')
-    env = parseEnv(envContent)
+function getEnvFromPath(envPath: string): Record<string, string> {
+  if (!fs.existsSync(envPath)) {
+    return {}
   }
-
+  const envContent = fs.readFileSync(envPath, 'utf-8')
+  return parseEnv(envContent)
+}
+function createEnvPlugin({ env }: { env: Record<string, string> }) {
   const viteStyleEnv: Record<string, string> = {}
   for (const [key, value] of Object.entries(env)) {
     viteStyleEnv[`import.meta.env.${key}`] = value
