@@ -43,8 +43,8 @@ export function setup() {
           },
         },
         null,
-        2
-      )
+        2,
+      ),
     )
   }
 
@@ -89,7 +89,7 @@ export function setup() {
         }
 
         export default CounterSnippet
-      `
+      `,
     )
   }
   // snippet client file
@@ -123,7 +123,7 @@ export function setup() {
         }
 
         customElements.define('app-counter', CounterElement)
-      `
+      `,
     )
   }
 
@@ -134,7 +134,7 @@ export function setup() {
       dedent`
         .counter {
           display: flex;
-        }`
+        }`,
     )
   }
   // .gitignore file
@@ -145,7 +145,7 @@ export function setup() {
       dedent`
         node_modules
         .react-liquid
-      `
+      `,
     )
   }
 
@@ -158,7 +158,7 @@ export function setup() {
       import { defineOptions } from 'react-liquid-theme/config'
 
       export default defineOptions({})
-      `
+      `,
     )
   }
 
