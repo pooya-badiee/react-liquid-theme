@@ -96,7 +96,7 @@ function getEnvFromPath(envPath: string): Record<string, string> {
 function createEnvPlugin({ env }: { env: Record<string, string> }) {
   const viteStyleEnv: Record<string, string> = {}
   for (const [key, value] of Object.entries(env)) {
-    viteStyleEnv[`import.meta.env.${key}`] = value
+    viteStyleEnv[`import.meta.env.${key}`] = `"${value}"`
   }
 
   return replacePlugin({
