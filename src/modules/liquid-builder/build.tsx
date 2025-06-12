@@ -104,11 +104,19 @@ export async function generateLiquidFiles({
       clientFiles.push(clientFilePath)
     }
     const module = await import(pathToFileURL(filePath).toString())
-    const Component = module.default
     const fileInfo = module.fileInfo ?? {
       extension: 'liquid',
+      returns: 'jsx',
     }
-    const reactOutputString = await renderToString(<Component />, { leaveComment: true })
+
+    let outputString = ''
+    if (fileInfo.renderType === 'jsx') {
+      const Component = module.default
+      outputString = await renderToString(<Component />, { leaveComment: true })
+    } else {
+      // string render
+      outputString = module.default()
+    }
 
     const outputFilePath = path.join(
       rootPath,
@@ -122,7 +130,7 @@ export async function generateLiquidFiles({
       fs.mkdirSync(outputFileDir, { recursive: true })
     }
 
-    fs.writeFileSync(outputFilePath, reactOutputString)
+    fs.writeFileSync(outputFilePath, outputString)
   }
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
