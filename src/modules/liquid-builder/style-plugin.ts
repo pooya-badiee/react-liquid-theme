@@ -3,6 +3,7 @@ import { createFilter } from '@rollup/pluginutils'
 import { compileString as compileSass } from 'sass'
 import postcss from 'postcss'
 import postCssModules from 'postcss-modules'
+import { pathToFileURL } from 'node:url'
 
 interface Options {
   output?: string
@@ -41,9 +42,13 @@ export function createStylePlugin({ output = 'main.css', env = {} }: Options = {
       let compiledCode = code
       if (isScss) {
         // Inject env variables into SCSS code
-        compiledCode = compileSass(`${SASS_ENV_STRING}${code}`).css
+        compiledCode = compileSass(`${SASS_ENV_STRING && ''}${code}`, {
+          url: pathToFileURL(id),
+        }).css
       }
-      const result = await (isModule ? modulesProcessor : processor).process(compiledCode, { from: id })
+      const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
+        from: id,
+      })
       collectedCss.push(result.css)
       if (!isModule) {
         return {

@@ -44,10 +44,24 @@ fs.writeFileSync(path.join(srcPath, 'global.d.ts'), GLOBAL_D_TS_CONTENT)
 // now we create the file.snippet.tsx files
 for (let index = 1; index <= 100; index++) {
   const fileSnippetPath = path.join(srcPath, `file.${index}.snippet.tsx`)
-  const fileSnippetContent = `export default function File${index}Snippet() {
-    return <div>File ${index} Snippet</div>
+  const fileSnippetContent = `
+  import classes from './file.${index}.module.scss'
+  export default function File${index}Snippet() {
+    return <div className={classes.root}>File ${index} Snippet</div>
   }
   `
+  // we also create a corresponding SCSS module file
+  const scssModulePath = path.join(srcPath, `file.${index}.module.scss`)
+  const scssModuleContent = `
+  .root {
+    color: var(--liquid-color-text);
+    background-color: var(--liquid-color-background);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  `
+  fs.writeFileSync(scssModulePath, scssModuleContent)
   fs.writeFileSync(fileSnippetPath, fileSnippetContent)
 }
 

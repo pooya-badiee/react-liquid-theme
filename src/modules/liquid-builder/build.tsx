@@ -104,9 +104,10 @@ export async function generateLiquidFiles({
       clientFiles.push(clientFilePath)
     }
     const module = await import(pathToFileURL(filePath).toString())
-    const fileInfo = module.fileInfo ?? {
+    const fileInfo = {
       extension: 'liquid',
-      returns: 'jsx',
+      renderType: 'jsx',
+      ...(module.fileInfo ?? {}),
     }
 
     let outputString = ''
