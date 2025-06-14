@@ -15,7 +15,8 @@
     "format:fix": "biome format --write",
     "lint:fix": "biome lint --unsafe --write",
     "build": "rollup -c rollup.config.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "create-test-project": "node scripts/create-test-project.js"
   },
   "bin": {
     "react-liquid-theme": "dist/cli.js"
