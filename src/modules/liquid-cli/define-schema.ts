@@ -1,5 +1,5 @@
-import type { ArgOptions } from './types'
+import type { ConfigFileOptions } from './types'
 
-export function defineOptions(options: ArgOptions) {
+export function defineOptions(options: ConfigFileOptions) {
   return options
 }

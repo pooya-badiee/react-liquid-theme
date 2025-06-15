@@ -1,16 +1,19 @@
 import type { InputPluginOption } from 'rollup'
 import { createFilter } from '@rollup/pluginutils'
-import { compileString as compileSass } from 'sass'
+import { compileString as compileSass, type DeprecationOrId } from 'sass'
 import postcss from 'postcss'
 import postCssModules from 'postcss-modules'
 import { pathToFileURL } from 'node:url'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 interface Options {
   output?: string
   env?: Record<string, string>
+  sassSilenceDeprecations?: string[] | undefined
 }
 
-export function createStylePlugin({ output = 'main.css', env = {} }: Options = {}) {
+export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations, env = {} }: Options = {}) {
   const SASS_ENV_STRING = `$env: (${Object.entries(env)
     .map(([key, value]) => `${key}: "${String(value).replace(/"/g, '\\"')}"`)
     .join(', ')});`
@@ -44,6 +47,21 @@ export function createStylePlugin({ output = 'main.css', env = {} }: Options = {
         // Inject env variables into SCSS code
         compiledCode = compileSass(`${SASS_ENV_STRING && ''}${code}`, {
           url: pathToFileURL(id),
+          silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
+          importers: [
+            {
+              findFileUrl(url) {
+                if (url.startsWith('~')) {
+                  const moduleName = url.slice(1)
+                  const modulePath = findInNodeModules(moduleName)
+                  if (modulePath) {
+                    return pathToFileURL(modulePath)
+                  }
+                }
+                return null
+              },
+            },
+          ],
         }).css
       }
       const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
@@ -88,4 +106,21 @@ function createIdForFile(filepath: string, name: string) {
   const newId = idMap.size + 1
   idMap.set(keyId, newId)
   return newId
+}
+
+function findInNodeModules(moduleName: string) {
+  const maxSearchDepth = 10
+  let currentDir = process.cwd()
+  for (let i = 0; i < maxSearchDepth; i++) {
+    const modulePath = path.join(currentDir, 'node_modules', moduleName)
+    if (fs.existsSync(modulePath)) {
+      return modulePath
+    }
+    const parentDir = path.dirname(currentDir)
+    if (parentDir === currentDir) {
+      break // Reached the root directory
+    }
+    currentDir = parentDir
+  }
+  return null
 }

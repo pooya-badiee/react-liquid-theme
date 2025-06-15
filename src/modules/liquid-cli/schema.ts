@@ -7,4 +7,5 @@ export const optionsSchema = z.object({
   css: z.string().default('main.css'),
   env: z.string().default('.env'),
   js: z.string().default('main.js'),
+  sassSilenceDeprecations: z.array(z.string()).optional(),
 })

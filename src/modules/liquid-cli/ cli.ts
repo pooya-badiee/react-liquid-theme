@@ -6,16 +6,16 @@ import { build, watch } from '../../modules/liquid-builder'
 import { setup } from '../../modules/liquid-setup/setup'
 import { pathToFileURL } from 'node:url'
 import { optionsSchema } from './schema'
-import type { ArgOptions } from './types'
+import type { ArgOptions, ConfigFileOptions } from './types'
 
 async function loadSettings(options: ArgOptions) {
   const configFilePath = path.join(process.cwd(), 'react-liquid-theme.js')
-  let configFileData: ArgOptions = {}
+  let configFileData: ConfigFileOptions = {}
 
   if (fs.existsSync(configFilePath)) {
     const module = await import(pathToFileURL(configFilePath).toString())
     if (module.default) {
-      configFileData = module.default as ArgOptions
+      configFileData = module.default as ConfigFileOptions
     }
   }
   return optionsSchema.parse({
@@ -75,7 +75,7 @@ export function setupCli() {
             type: 'string',
           }),
       async (argv) => {
-        const options = await loadSettings(argv)
+        const options = await (await loadSettings(argv))
         if (argv.watch) {
           watch({
             dist: options.dist,
@@ -84,6 +84,7 @@ export function setupCli() {
             css: options.css,
             envFile: options.env,
             jsFile: options.js,
+            sassSilenceDeprecations: options.sassSilenceDeprecations,
           })
           return
         }
@@ -94,10 +95,11 @@ export function setupCli() {
           css: options.css,
           envFile: options.env,
           jsFile: options.js,
+          sassSilenceDeprecations: options.sassSilenceDeprecations,
         })
       },
     )
-    .version('0.9.2')
+    .version('0.10.0')
     .strict()
     .parse()
 }

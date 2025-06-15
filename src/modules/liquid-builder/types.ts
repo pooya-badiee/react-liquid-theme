@@ -5,4 +5,5 @@ export type BuildOptions = {
   css: string
   envFile: string
   jsFile: string
+  sassSilenceDeprecations?: string[] | undefined
 }
