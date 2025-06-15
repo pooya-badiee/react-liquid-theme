@@ -143,7 +143,7 @@ export async function generateLiquidFiles({
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const rollupClientBuild = await rollup(
-      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile }),
+      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile, sassSilenceDeprecations: options.sassSilenceDeprecations }),
     )
     await rollupClientBuild.write({
       format: 'module',
