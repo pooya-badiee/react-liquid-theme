@@ -45,7 +45,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       let compiledCode = code
       if (isScss) {
         // Inject env variables into SCSS code
-        compiledCode = compileSass(`${SASS_ENV_STRING && ''}${code}`, {
+        compiledCode = compileSass(`${SASS_ENV_STRING}${code}`, {
           url: pathToFileURL(id),
           silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
           importers: [

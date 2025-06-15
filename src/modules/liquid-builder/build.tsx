@@ -20,7 +20,7 @@ export async function build(options: BuildOptions) {
   console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
   const rollupBuild = await rollup(
-    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile })
+    getConfig(allSnippetFiles, { css: options.css, cwd: rootPath, envFile: options.envFile, sassSilenceDeprecations: options.sassSilenceDeprecations })
   )
 
   const distDir = path.join(rootPath, options.dist)
