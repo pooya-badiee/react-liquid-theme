@@ -1,1 +1,1 @@
-export { setupCli } from './ cli'
+export { setupCli } from '/cli'
