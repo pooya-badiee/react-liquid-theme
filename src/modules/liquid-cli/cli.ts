@@ -99,7 +99,7 @@ export function setupCli() {
         })
       },
     )
-    .version('0.10.1')
+    .version('0.10.2')
     .strict()
     .parse()
 }
