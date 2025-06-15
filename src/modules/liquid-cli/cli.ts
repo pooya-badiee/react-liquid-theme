@@ -75,7 +75,7 @@ export function setupCli() {
             type: 'string',
           }),
       async (argv) => {
-        const options = await (await loadSettings(argv))
+        const options = await await loadSettings(argv)
         if (argv.watch) {
           watch({
             dist: options.dist,
@@ -99,7 +99,7 @@ export function setupCli() {
         })
       },
     )
-    .version('0.10.2')
+    .version('0.10.3')
     .strict()
     .parse()
 }

@@ -75,7 +75,12 @@ export function watch(options: BuildOptions) {
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allProcessableFiles.length)} snippet files`))
 
     const watcher = rollupWatch({
-      ...getConfig(allProcessableFiles, { css: options.css, cwd: rootPath, envFile: options.envFile, sassSilenceDeprecations: options.sassSilenceDeprecations }),
+      ...getConfig(allProcessableFiles, {
+        css: options.css,
+        cwd: rootPath,
+        envFile: options.envFile,
+        sassSilenceDeprecations: options.sassSilenceDeprecations,
+      }),
       output: {
         dir: path.join(rootPath, options.dist),
         format: 'esm',

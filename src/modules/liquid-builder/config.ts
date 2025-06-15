@@ -9,7 +9,10 @@ import replacePlugin from '@rollup/plugin-replace'
 import { parse as parseEnv } from 'dotenv'
 import { createStylePlugin } from './style-plugin'
 
-export function getConfig(files: string[], options: { css: string; cwd: string; envFile: string, sassSilenceDeprecations?: string[] | undefined }) {
+export function getConfig(
+  files: string[],
+  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined },
+) {
   const env = getEnvFromPath(options.envFile)
   return {
     input: files,
@@ -48,7 +51,10 @@ export function getConfig(files: string[], options: { css: string; cwd: string; 
     ],
   } satisfies Parameters<typeof rollup>[0]
 }
-export function getClientConfig(files: string[], options: { css: string; cwd: string; envFile: string }) {
+export function getClientConfig(
+  files: string[],
+  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined },
+) {
   const env = getEnvFromPath(options.envFile)
   return {
     input: files,
@@ -64,7 +70,7 @@ export function getClientConfig(files: string[], options: { css: string; cwd: st
         browser: true,
       }),
       commonjsPlugin(),
-      createStylePlugin({ output: options.css, env }),
+      createStylePlugin({ output: options.css, env, sassSilenceDeprecations: options.sassSilenceDeprecations }),
       swc({
         minify: true,
         jsc: {
