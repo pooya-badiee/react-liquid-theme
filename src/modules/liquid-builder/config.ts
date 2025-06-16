@@ -11,7 +11,7 @@ import { createStylePlugin } from './style-plugin'
 
 export function getConfig(
   files: string[],
-  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined }
+  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined },
 ) {
   const env = getEnvFromPath(options.envFile)
   return {
@@ -53,7 +53,7 @@ export function getConfig(
 }
 export function getClientConfig(
   files: string[],
-  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined }
+  options: { css: string; cwd: string; envFile: string; sassSilenceDeprecations?: string[] | undefined },
 ) {
   const env = getEnvFromPath(options.envFile)
   return {

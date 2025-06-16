@@ -103,6 +103,7 @@ export async function generateLiquidFiles({
   options: BuildOptions
   sourcePath: string
   jsOutputFile: string
+  sassSilenceDeprecations?: string[]
 }) {
   const filesToExecute = getAllToExecuteFiles({ distDir, allProcessableFiles })
   const clientFiles: string[] = []
@@ -143,7 +144,12 @@ export async function generateLiquidFiles({
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const rollupClientBuild = await rollup(
-      getClientConfig([tempFilePath], { css: options.css, cwd: rootPath, envFile: options.envFile, sassSilenceDeprecations: options.sassSilenceDeprecations }),
+      getClientConfig([tempFilePath], {
+        css: options.css,
+        cwd: rootPath,
+        envFile: options.envFile,
+        sassSilenceDeprecations: options.sassSilenceDeprecations,
+      }),
     )
     await rollupClientBuild.write({
       format: 'module',
@@ -184,7 +190,7 @@ function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: strin
       filePath: path.join(distDir, `${server.fileName}.${server.fileSemiExtension}.js`),
       fileName: `${server.fileName}.${server.fileSemiExtension}.js`,
       targetFileNameWithoutExtension: server.fileName,
-      targetFolder: `${server.fileSemiExtension}${server.fileSemiExtension === 'layout' ? '' : 's'}`,
+      targetFolder: getTargetFolder(server.fileSemiExtension),
       clientFilePath: client?.sourceFilePath || null,
     })
   }
@@ -241,4 +247,11 @@ export function parseProcessableFilePath(filepath: string) {
     isClient,
     sourceFilePath: normalizedPath,
   }
+}
+
+function getTargetFolder(fileSemiExtension: string) {
+  if (fileSemiExtension === 'config' || fileSemiExtension === 'layout') {
+    return fileSemiExtension
+  }
+  return `${fileSemiExtension}s`
 }

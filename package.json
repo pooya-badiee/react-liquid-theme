@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "files": ["dist"],
-  "version": "0.10.4",
+  "version": "0.10.5",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
