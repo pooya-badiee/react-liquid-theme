@@ -9,7 +9,7 @@ import { optionsSchema } from './schema'
 import type { ArgOptions, ConfigFileOptions } from './types'
 
 async function loadSettings(options: ArgOptions) {
-  const configFilePath = path.join(process.cwd(), 'react-liquid-theme.js')
+  const configFilePath = path.join(process.cwd(), 'theme.config.js')
   let configFileData: ConfigFileOptions = {}
 
   if (fs.existsSync(configFilePath)) {
@@ -99,7 +99,7 @@ export function setupCli() {
         })
       },
     )
-    .version('0.10.5')
+    .version('0.10.6')
     .strict()
     .parse()
 }

@@ -149,8 +149,8 @@ export function setup() {
     )
   }
 
-  // react-liquid-theme.js config file
-  const configFilePath = path.join(root, 'react-liquid-theme.js')
+  // theme.config.js config file
+  const configFilePath = path.join(root, 'theme.config.js')
   if (!fs.existsSync(configFilePath)) {
     fs.writeFileSync(
       configFilePath,
