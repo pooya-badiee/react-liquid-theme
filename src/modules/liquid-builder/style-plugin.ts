@@ -3,7 +3,7 @@ import { createFilter } from '@rollup/pluginutils'
 import { compileString as compileSass, type DeprecationOrId } from 'sass'
 import postcss from 'postcss'
 import postCssModules from 'postcss-modules'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
@@ -37,7 +37,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
 
   return {
     name: 'rollup-plugin-liquid-style',
-    transform: async (code, id) => {
+    transform: async function transform(code, id) {
       const isCss = cssFilter(id)
       const isScss = scssFilter(id)
       if (!isCss && !isScss) return
@@ -45,7 +45,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       let compiledCode = code
       if (isScss) {
         // Inject env variables into SCSS code
-        compiledCode = compileSass(`${SASS_ENV_STRING}${code}`, {
+        const compiled = compileSass(`${SASS_ENV_STRING}${code}`, {
           url: pathToFileURL(id),
           silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
           importers: [
@@ -62,7 +62,11 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
               },
             },
           ],
-        }).css
+        })
+        for (const loadedUrl of compiled.loadedUrls) {
+          this.addWatchFile(fileURLToPath(loadedUrl))
+        }
+        compiledCode = compiled.css
       }
       const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
         from: id,
