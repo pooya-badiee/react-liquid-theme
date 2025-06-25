@@ -54,14 +54,14 @@ describe('parseProcessableFilePath', () => {
   })
 
   test('determines client-side files correctly', () => {
-    const parsed = parseProcessableFilePath('button.client.snippet.tsx')
+    const parsed = parseProcessableFilePath('button.snippet.client.tsx')
     console.log(parsed)
     expect(parsed).toEqual({
       fileName: 'button',
       fileExtension: 'tsx',
       fileSemiExtension: 'snippet',
       isClient: true,
-      sourceFilePath: 'button.client.snippet.tsx',
+      sourceFilePath: 'button.snippet.client.tsx',
     })
   })
 })
