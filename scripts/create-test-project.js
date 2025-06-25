@@ -24,6 +24,7 @@ const packageJson = {
   },
   scripts: {
     build: 'node ./node_modules/react-liquid-theme/dist/cli.js generate',
+    watch: 'node ./node_modules/react-liquid-theme/dist/cli.js generate --watch',
     setup: 'node ./node_modules/react-liquid-theme/dist/cli.js setup',
   },
 }

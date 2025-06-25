@@ -113,7 +113,10 @@ export async function generateLiquidFiles({
     if (clientFilePath) {
       clientFiles.push(clientFilePath)
     }
-    const module = await import(pathToFileURL(filePath).toString())
+    const fileUrl = pathToFileURL(filePath).toString()
+    // preventing caching
+    const noCacheUrl = `${fileUrl}?update=${Date.now()}`
+    const module = await import(noCacheUrl)
     const fileInfo = {
       extension: 'liquid',
       renderType: 'jsx',
@@ -143,7 +146,6 @@ export async function generateLiquidFiles({
 
     fs.writeFileSync(outputFilePath, outputString)
   }
-  console.log('------------', clientFiles)
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const rollupClientBuild = await rollup(
@@ -242,7 +244,7 @@ export function parseProcessableFilePath(filepath: string) {
   if (!fileExtension || !fileSemiExtension) return null
   if (!PROCESSABLE_EXTENSIONS.includes(fileSemiExtension)) return null
 
-  const fileName = parts.slice(0,isClient ? -3 : -2).join('.')
+  const fileName = parts.slice(0, isClient ? -3 : -2).join('.')
   return {
     fileName: fileName.replace(/\.client$/, ''), // Remove .client if present
     fileExtension,
