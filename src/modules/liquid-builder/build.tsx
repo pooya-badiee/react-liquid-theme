@@ -74,14 +74,16 @@ export async function build(options: BuildOptions) {
 
 export function getAllProcessableFiles({ sourcePath, rootPath }: { sourcePath: string; rootPath: string }) {
   const relativeSource = path.relative(rootPath, sourcePath)
+  const unixPath = relativeSource.split(path.sep).join('/')
   const patterns = ['ts', 'tsx'].flatMap((ext) =>
-    PROCESSABLE_EXTENSIONS.map((type) =>
-      path.posix.join(relativeSource.split(path.sep).join('/'), `**/*.${type}.${ext}`),
-    ),
+    PROCESSABLE_EXTENSIONS.flatMap((type) => [
+      `${unixPath}/**/*.${type}.${ext}`,
+      `${unixPath}/**/*.${type}.client.${ext}`,
+    ]),
   )
 
-  const allSnippetFiles = globSync(patterns, { cwd: rootPath, absolute: true })
-  return allSnippetFiles
+  const allProcessableFiles = globSync(patterns, { cwd: rootPath, absolute: true })
+  return allProcessableFiles
 }
 export function cleanup({ distDir }: { distDir: string }) {
   if (fs.existsSync(distDir)) {
@@ -141,6 +143,7 @@ export async function generateLiquidFiles({
 
     fs.writeFileSync(outputFilePath, outputString)
   }
+  console.log('------------', clientFiles)
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const rollupClientBuild = await rollup(
@@ -232,14 +235,14 @@ export function parseProcessableFilePath(filepath: string) {
   if (parts.length < 3) return null
 
   // is it file.client.snippet.tsx or file.snippet.tsx
-  const isClient = parts[parts.length - 3] === 'client'
+  const isClient = parts[parts.length - 2] === 'client'
   const fileExtension = parts[parts.length - 1]
-  const fileSemiExtension = parts[parts.length - 2]
+  const fileSemiExtension = isClient ? parts[parts.length - 3] : parts[parts.length - 2]
 
   if (!fileExtension || !fileSemiExtension) return null
   if (!PROCESSABLE_EXTENSIONS.includes(fileSemiExtension)) return null
 
-  const fileName = parts.slice(0, -2).join('.')
+  const fileName = parts.slice(0,isClient ? -3 : -2).join('.')
   return {
     fileName: fileName.replace(/\.client$/, ''), // Remove .client if present
     fileExtension,
