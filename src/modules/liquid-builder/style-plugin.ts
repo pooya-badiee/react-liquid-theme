@@ -33,7 +33,9 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       },
     }),
   ])
-  const collectedCss: string[] = []
+
+  const globalCss: string[] = []
+  const moduleCss: string[] = []
 
   return {
     name: 'rollup-plugin-liquid-style',
@@ -44,7 +46,6 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       const isModule = id.includes('.module.')
       let compiledCode = code
       if (isScss) {
-        // Inject env variables into SCSS code
         const compiled = compileSass(`${SASS_ENV_STRING}${code}`, {
           url: pathToFileURL(id),
           silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
@@ -71,7 +72,13 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
         from: id,
       })
-      collectedCss.push(result.css)
+
+      if (isModule) {
+        moduleCss.push(result.css)
+      } else {
+        globalCss.push(result.css)
+      }
+
       if (!isModule) {
         return {
           code: `export default ${JSON.stringify(result.css)}`,
@@ -89,8 +96,9 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       }
     },
     generateBundle() {
-      if (!collectedCss.length) return
-      const finalCss = collectedCss.join('\n')
+      const finalCss = [...globalCss, ...moduleCss].join('\n')
+      if (!finalCss) return
+
       this.emitFile({
         type: 'asset',
         fileName: `assets/${output}`,
@@ -122,7 +130,7 @@ function findInNodeModules(moduleName: string) {
     }
     const parentDir = path.dirname(currentDir)
     if (parentDir === currentDir) {
-      break // Reached the root directory
+      break // Reached the root directory, stop searching
     }
     currentDir = parentDir
   }
