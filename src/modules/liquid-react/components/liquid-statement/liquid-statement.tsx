@@ -1,4 +1,5 @@
 import dedent from 'dedent'
+import { HtmlDecoder } from '../html-decoder'
 
 export interface LiquidStatementProps {
   statement: string
@@ -7,9 +8,11 @@ export interface LiquidStatementProps {
 }
 
 export function LiquidStatement({ statement, leftTrim, rightTrim }: LiquidStatementProps) {
-  return dedent`
+  return (
+    <HtmlDecoder>{dedent`
     {%${leftTrim ? '-' : ''} liquid
       ${statement}
     ${rightTrim ? '-' : ''}%}
-  `
+  `}</HtmlDecoder>
+  )
 }
