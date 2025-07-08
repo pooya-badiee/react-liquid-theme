@@ -1,3 +1,5 @@
+import HtmlDecoder from '../html-decoder/html-decoder'
+
 export interface LiquidExpressionProps {
   leftTrim?: boolean
   rightTrim?: boolean
@@ -5,5 +7,5 @@ export interface LiquidExpressionProps {
 }
 
 export function LiquidExpression({ leftTrim, rightTrim, expression }: LiquidExpressionProps) {
-  return `{{${leftTrim ? '-' : ''} ${expression} ${rightTrim ? '-' : ''}}}`
+  return <HtmlDecoder>{`{{${leftTrim ? '-' : ''} ${expression} ${rightTrim ? '-' : ''}}}`}</HtmlDecoder>
 }

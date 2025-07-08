@@ -1,3 +1,4 @@
+import HtmlDecoder from '../html-decoder/html-decoder'
 import type { BaseLiquidTagProps } from './types'
 
 export interface LiquidTagProps extends BaseLiquidTagProps {
@@ -16,9 +17,9 @@ export function LiquidTag({
 }: LiquidTagProps) {
   return (
     <>
-      {`{%${leftTrim ? '-' : ''} ${name}${statement ? ` ${statement}` : ''} ${leftBeginTrim ? '-' : ''}%}`}
+      <HtmlDecoder>{`{%${leftTrim ? '-' : ''} ${name}${statement ? ` ${statement}` : ''} ${leftBeginTrim ? '-' : ''}%}`}</HtmlDecoder>
       {children}
-      {`{%${rightTrim ? '-' : ''} end${name} ${rightBeginTrim ? '-' : ''}%}`}
+      <HtmlDecoder>{`{%${rightTrim ? '-' : ''} end${name} ${rightBeginTrim ? '-' : ''}%}`}</HtmlDecoder>
     </>
   )
 }

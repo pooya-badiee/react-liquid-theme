@@ -3,6 +3,8 @@ import { renderToPipeableStream } from 'react-dom/server'
 import { PassThrough } from 'node:stream'
 import * as prettier from 'prettier'
 import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone.js'
+import { decodeHtml } from '../liquid-react/components/html-decoder/decode-html'
+import { DECODE_END_SIGN, DECODE_START_SIGN } from '../liquid-react/components/html-decoder/constants'
 
 const HEADER_COMMENT = `
 {%- comment -%}
@@ -31,6 +33,7 @@ export async function renderToString(
       html += removeTrashComments(chunk)
     })
     stream.on('end', async () => {
+      html = decodeHtml(html, DECODE_START_SIGN, DECODE_END_SIGN)
       html = await prettier.format((leaveComment ? HEADER_COMMENT : '') + html, {
         parser: 'liquid-html',
         plugins: [liquidPlugin],

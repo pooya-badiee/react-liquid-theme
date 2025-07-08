@@ -22,10 +22,7 @@ export function decodeHtml(html: string, startSign: string, endSign: string): st
     const decoded = decode(inner)
 
     // Replace the matched section with the decoded text
-    remaining =
-      remaining.slice(0, start) +
-      decoded +
-      remaining.slice(end + endSign.length)
+    remaining = remaining.slice(0, start) + decoded + remaining.slice(end + endSign.length)
   }
 
   return remaining

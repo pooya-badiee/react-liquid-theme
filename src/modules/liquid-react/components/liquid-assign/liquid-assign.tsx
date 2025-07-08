@@ -2,8 +2,9 @@ import { LiquidSelfClosingTag, type BaseSelfClosingLiquidTagProps } from '../liq
 
 interface LiquidAssignProps extends BaseSelfClosingLiquidTagProps {
   name: string
+  value: string
 }
 
-export function LiquidAssign({ name, ...otherProps }: LiquidAssignProps) {
-  return <LiquidSelfClosingTag name="assign" statement={name} {...otherProps} />
+export function LiquidAssign({ name, value, ...otherProps }: LiquidAssignProps) {
+  return <LiquidSelfClosingTag name="assign" statement={`${name} = ${value}`} {...otherProps} />
 }

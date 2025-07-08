@@ -1,3 +1,4 @@
+import HtmlDecoder from '../html-decoder/html-decoder'
 import type { BaseSelfClosingLiquidTagProps } from './types'
 
 export interface LiquidSelfClosingTagProps extends BaseSelfClosingLiquidTagProps {
@@ -6,5 +7,7 @@ export interface LiquidSelfClosingTagProps extends BaseSelfClosingLiquidTagProps
 }
 
 export function LiquidSelfClosingTag({ name, statement, leftTrim, rightTrim }: LiquidSelfClosingTagProps) {
-  return `{%${leftTrim ? '-' : ''} ${name}${statement ? ` ${statement}` : ''} ${rightTrim ? '-' : ''}%}`
+  return (
+    <HtmlDecoder>{`{%${leftTrim ? '-' : ''} ${name}${statement ? ` ${statement}` : ''} ${rightTrim ? '-' : ''}%}`}</HtmlDecoder>
+  )
 }
