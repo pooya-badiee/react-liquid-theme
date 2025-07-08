@@ -1,4 +1,4 @@
-import HtmlDecoder from '../html-decoder/html-decoder'
+import { HtmlDecoder } from '../html-decoder/html-decoder'
 import type { BaseLiquidTagProps } from './types'
 
 export interface LiquidTagProps extends BaseLiquidTagProps {

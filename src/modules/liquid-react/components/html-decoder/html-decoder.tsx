@@ -5,7 +5,7 @@ interface HtmlDecoderProps {
   children: ReactNode
 }
 
-function HtmlDecoder({ children }: HtmlDecoderProps) {
+export function HtmlDecoder({ children }: HtmlDecoderProps) {
   return (
     <>
       {DECODE_START_SIGN}
@@ -15,4 +15,3 @@ function HtmlDecoder({ children }: HtmlDecoderProps) {
   )
 }
 
-export default HtmlDecoder
