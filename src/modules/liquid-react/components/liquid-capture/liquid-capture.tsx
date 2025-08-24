@@ -1,4 +1,4 @@
-import { LiquidTag, type BaseLiquidTagProps } from '../liquid-tag'
+import { type BaseLiquidTagProps, LiquidTag } from '../liquid-tag'
 
 export interface LiquidCaptureProps extends BaseLiquidTagProps {
   variableName: string

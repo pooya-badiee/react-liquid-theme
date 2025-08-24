@@ -1,10 +1,10 @@
-import yargs from 'yargs'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { build, watch } from '../liquid-builder'
 import { setup } from '../liquid-setup/setup'
-import { pathToFileURL } from 'node:url'
 import { optionsSchema } from './schema'
 import type { ArgOptions, ConfigFileOptions } from './types'
 

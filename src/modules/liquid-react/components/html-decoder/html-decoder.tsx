@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { DECODE_START_SIGN, DECODE_END_SIGN } from './constants'
+import { DECODE_END_SIGN, DECODE_START_SIGN } from './constants'
 
 interface HtmlDecoderProps {
   children: ReactNode

@@ -1,6 +1,6 @@
-import { test, expect, beforeAll, afterAll, describe } from 'vitest'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { cleanup, getAllProcessableFiles, parseProcessableFilePath } from './build'
 
 const tmpDir = path.join(process.cwd(), '__tmp__')

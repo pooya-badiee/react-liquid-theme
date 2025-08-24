@@ -1,4 +1,4 @@
-import { LiquidTag, type BaseLiquidTagProps } from '../liquid-tag'
+import { type BaseLiquidTagProps, LiquidTag } from '../liquid-tag'
 
 export interface LiquidUnless extends BaseLiquidTagProps {
   condition: string

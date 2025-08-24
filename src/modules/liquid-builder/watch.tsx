@@ -1,12 +1,12 @@
-import { type RollupError, watch as rollupWatch } from 'rollup'
 import * as path from 'node:path'
-import { getConfig } from './config'
-import type { BuildOptions } from './types'
-import chokidar from 'chokidar'
-import { throttle } from './utils'
-import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
-import { PROCESSABLE_EXTENSIONS } from './constants'
 import chalk from 'chalk'
+import chokidar from 'chokidar'
+import { type RollupError, watch as rollupWatch } from 'rollup'
+import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
+import { getConfig } from './config'
+import { PROCESSABLE_EXTENSIONS } from './constants'
+import type { BuildOptions } from './types'
+import { throttle } from './utils'
 
 function handleBundleStart(isFirstBuild: boolean): number {
   const buildStartTime = performance.now()

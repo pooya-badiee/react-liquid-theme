@@ -1,10 +1,10 @@
+import { PassThrough } from 'node:stream'
+import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone.js'
+import * as prettier from 'prettier'
 import type { ReactNode } from 'react'
 import { renderToPipeableStream } from 'react-dom/server'
-import { PassThrough } from 'node:stream'
-import * as prettier from 'prettier'
-import liquidPlugin from '@shopify/prettier-plugin-liquid/standalone.js'
-import { decodeHtml } from '../liquid-react/components/html-decoder/decode-html'
 import { DECODE_END_SIGN, DECODE_START_SIGN } from '../liquid-react/components/html-decoder/constants'
+import { decodeHtml } from '../liquid-react/components/html-decoder/decode-html'
 
 const HEADER_COMMENT = `
 {%- comment -%}

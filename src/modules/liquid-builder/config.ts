@@ -1,12 +1,12 @@
-import type { rollup } from 'rollup'
-import * as path from 'node:path'
 import * as fs from 'node:fs'
-import swc from 'rollup-plugin-swc3'
-import tsconfigPathsPlugin from 'rollup-plugin-tsconfig-paths'
-import { nodeResolve as nodeResolvePlugin } from '@rollup/plugin-node-resolve'
+import * as path from 'node:path'
 import commonjsPlugin from '@rollup/plugin-commonjs'
+import { nodeResolve as nodeResolvePlugin } from '@rollup/plugin-node-resolve'
 import replacePlugin from '@rollup/plugin-replace'
 import { parse as parseEnv } from 'dotenv'
+import type { rollup } from 'rollup'
+import swc from 'rollup-plugin-swc3'
+import tsconfigPathsPlugin from 'rollup-plugin-tsconfig-paths'
 import { createStylePlugin } from './style-plugin'
 
 export function getConfig(

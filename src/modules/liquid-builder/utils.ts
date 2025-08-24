@@ -1,5 +1,5 @@
-import * as path from 'node:path'
 import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
   fn: T,

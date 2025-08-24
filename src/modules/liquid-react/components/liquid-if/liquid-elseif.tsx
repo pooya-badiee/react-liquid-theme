@@ -1,4 +1,4 @@
-import { LiquidSelfClosingTag, type BaseSelfClosingLiquidTagProps } from '../liquid-tag'
+import { type BaseSelfClosingLiquidTagProps, LiquidSelfClosingTag } from '../liquid-tag'
 
 export interface LiquidElseIfProps extends BaseSelfClosingLiquidTagProps {
   condition: string

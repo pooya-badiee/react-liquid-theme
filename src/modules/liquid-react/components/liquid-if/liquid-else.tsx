@@ -1,4 +1,4 @@
-import { LiquidSelfClosingTag, type BaseSelfClosingLiquidTagProps } from '../liquid-tag'
+import { type BaseSelfClosingLiquidTagProps, LiquidSelfClosingTag } from '../liquid-tag'
 
 export interface LiquidElseProps extends BaseSelfClosingLiquidTagProps {
   children?: React.ReactNode

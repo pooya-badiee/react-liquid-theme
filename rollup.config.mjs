@@ -1,10 +1,10 @@
-import { defineConfig } from 'rollup'
-import typescriptPlugin from '@rollup/plugin-typescript'
-import swcPlugin from 'rollup-plugin-swc3'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import nodeResolvePlugin from '@rollup/plugin-node-resolve'
+import typescriptPlugin from '@rollup/plugin-typescript'
+import { defineConfig } from 'rollup'
+import swcPlugin from 'rollup-plugin-swc3'
 
 // clean up dist folder first
 try {
