@@ -1,11 +1,11 @@
-import type { InputPluginOption } from 'rollup'
-import { createFilter } from '@rollup/pluginutils'
-import { compileString as compileSass, type DeprecationOrId } from 'sass'
-import postcss from 'postcss'
-import postCssModules from 'postcss-modules'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createFilter } from '@rollup/pluginutils'
+import postcss from 'postcss'
+import postCssModules from 'postcss-modules'
+import type { InputPluginOption } from 'rollup'
+import { type DeprecationOrId, compileString as compileSass } from 'sass'
 
 interface Options {
   output?: string
@@ -53,8 +53,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
             {
               findFileUrl(url) {
                 if (url.startsWith('~')) {
-                  const moduleName = url.slice(1)
-                  const modulePath = findInNodeModules(moduleName)
+                  const modulePath = findInNodeModules(url)
                   if (modulePath) {
                     return pathToFileURL(modulePath)
                   }
@@ -120,11 +119,12 @@ function createIdForFile(filepath: string, name: string) {
   return newId
 }
 
-function findInNodeModules(moduleName: string) {
+export function findInNodeModules(moduleName: string) {
+  const actualModuleName = moduleName.replace(/^~/, '')
   const maxSearchDepth = 10
   let currentDir = process.cwd()
   for (let i = 0; i < maxSearchDepth; i++) {
-    const modulePath = path.join(currentDir, 'node_modules', moduleName)
+    const modulePath = path.join(currentDir, 'node_modules', actualModuleName)
     if (fs.existsSync(modulePath)) {
       return modulePath
     }
