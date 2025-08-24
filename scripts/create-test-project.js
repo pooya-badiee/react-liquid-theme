@@ -1,6 +1,6 @@
-import * as path from 'node:path'
-import * as fs from 'node:fs'
 import { execSync } from 'node:child_process'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 const testProjectPath = path.resolve(process.cwd(), '..', 'react-liquid-theme-test')
 const testProjectPackageJsonPath = path.join(testProjectPath, 'package.json')
