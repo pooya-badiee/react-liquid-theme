@@ -34,12 +34,17 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
     }),
   ])
 
-  const globalCss: string[] = []
-  const moduleCss: string[] = []
+  let globalCss: string[] = []
+  let moduleCss: string[] = []
 
   return {
     name: 'rollup-plugin-liquid-style',
-    transform: async function transform(code, id) {
+    buildStart() {
+      globalCss = []
+      moduleCss = []
+      postCssMap.clear()
+    },
+    transform: async function(code, id) {
       const isCss = cssFilter(id)
       const isScss = scssFilter(id)
       if (!isCss && !isScss) return
