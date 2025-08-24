@@ -5,7 +5,7 @@ import { createFilter } from '@rollup/pluginutils'
 import postcss from 'postcss'
 import postCssModules from 'postcss-modules'
 import type { InputPluginOption } from 'rollup'
-import { type DeprecationOrId, compileString as compileSass } from 'sass'
+import { compileString as compileSass, type DeprecationOrId } from 'sass'
 
 interface Options {
   output?: string
