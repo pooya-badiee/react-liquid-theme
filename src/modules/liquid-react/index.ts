@@ -1,4 +1,4 @@
-export { HtmlDecoder as UNSTABLE_HtmlDecoder } from './components/html-decoder'
+export { HtmlDecoder, makeDecodable } from './components/html-decoder'
 export * from './components/liquid-assign'
 export * from './components/liquid-break'
 export * from './components/liquid-capture'
