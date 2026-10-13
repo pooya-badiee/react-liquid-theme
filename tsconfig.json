@@ -21,8 +21,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     // no DOM
-    "lib": ["ES2021"],
-    "target": "ES2021",
+    "lib": ["ES2025"],
+    "target": "ES2025",
     "moduleResolution": "bundler",
     "module": "Preserve",
     "jsx": "react-jsx"
