@@ -44,7 +44,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
       moduleCss = []
       postCssMap.clear()
     },
-    transform: async function(code, id) {
+    transform: async function (code, id) {
       const isCss = cssFilter(id)
       const isScss = scssFilter(id)
       if (!isCss && !isScss) return
