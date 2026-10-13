@@ -83,18 +83,32 @@ Import styles into React components, and they will be bundled into `main.css` in
 
 These React components map to Liquid tags or control flow logic:
 
-| Component          | Description        |
-| ------------------ | ------------------ |
-| `LiquidAssign`     | `{% assign %}`     |
-| `LiquidBreak`      | `{% break %}`      |
-| `LiquidCapture`    | `{% capture %}`    |
-| `LiquidContinue`   | `{% continue %}`   |
-| `LiquidFor`        | `{% for %}`        |
-| `LiquidIf`         | `{% if %}`         |
-| `LiquidUnless`     | `{% unless %}`     |
-| `LiquidStatement`  | `{% liquid %}`     |
-| `LiquidExpression` | `{{ expression }}` |
-| `LiquidTag`        | Can create any tag |
+| Component             | Description                       |
+| --------------------- | --------------------------------- |
+| `LiquidAssign`        | `{% assign %}`                    |
+| `LiquidBreak`         | `{% break %}`                     |
+| `LiquidCapture`       | `{% capture %}`                   |
+| `LiquidCase`          | `{% case %}`                      |
+| `LiquidWhen`          | `{% when %}`                      |
+| `LiquidComment`       | `{% comment %}`                   |
+| `LiquidInlineComment` | `{% # comment %}`                 |
+| `LiquidContinue`      | `{% continue %}`                  |
+| `LiquidCycle`         | `{% cycle %}`                     |
+| `LiquidDecrement`     | `{% decrement %}`                 |
+| `LiquidEcho`          | `{% echo %}`                      |
+| `LiquidFor`           | `{% for %}`                       |
+| `LiquidIf`            | `{% if %}`                        |
+| `LiquidElseIf`        | `{% elsif %}`                     |
+| `LiquidElse`          | `{% else %}`                      |
+| `LiquidIncrement`     | `{% increment %}`                 |
+| `LiquidRawTag`        | `{% raw %}`                       |
+| `LiquidTablerow`      | `{% tablerow %}`                  |
+| `LiquidUnless`        | `{% unless %}`                    |
+| `LiquidStatement`     | `{% liquid %}`                    |
+| `LiquidRender`        | `{% render %}`                    |
+| `LiquidExpression`    | `{{ expression }}`                |
+| `LiquidRaw`           | Parses a Liquid string into React |
+| `LiquidTag`           | Can create any tag                |
 
 ---
 
