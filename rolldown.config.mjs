@@ -1,9 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import commonjsPlugin from '@rollup/plugin-commonjs'
-import nodeResolvePlugin from '@rollup/plugin-node-resolve'
-import { defineConfig } from 'rollup'
-import swcPlugin from 'rollup-plugin-swc3'
+import { defineConfig } from 'rolldown'
 
 // clean up dist folder first
 try {
@@ -14,17 +11,24 @@ try {
   console.error('Error while deleting dist folder:', error)
 }
 
+/** @type {import('rolldown').TransformOptions} */
+const transform = {
+  jsx: {
+    runtime: 'automatic',
+    development: false,
+  },
+}
+
 export default defineConfig([
   // esm build
   {
     input: ['src/index.ts', 'src/utils.ts', 'src/config.ts'],
+    platform: 'node',
     external: handleExternal,
-    plugins: [
-      nodeResolvePlugin(),
-      commonjsPlugin(),
-      createSwcPlugin(),
-      copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' }]),
-    ],
+    transform,
+    // src modules are side-effect free; avoids emitting re-export-only barrel files
+    treeshake: { moduleSideEffects: [{ test: /[\\/]src[\\/].*[\\/]index\.tsx?$/, sideEffects: false }] },
+    plugins: [copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' }])],
     output: {
       format: 'esm',
       dir: 'dist',
@@ -35,37 +39,20 @@ export default defineConfig([
   // cli app
   {
     input: 'src/cli.ts',
+    platform: 'node',
     external: handleExternal,
+    transform,
     output: {
       format: 'esm',
       file: 'dist/cli.js',
       banner: '#!/usr/bin/env node',
-      interop: 'auto',
     },
-    plugins: [nodeResolvePlugin(), commonjsPlugin(), createSwcPlugin()],
   },
 ])
 
-function createSwcPlugin() {
-  return swcPlugin({
-    jsc: {
-      parser: {
-        syntax: 'typescript',
-        tsx: true,
-      },
-      transform: {
-        react: {
-          runtime: 'automatic',
-          development: false,
-        },
-      },
-    },
-  })
-}
-
 function copyPlugin(files) {
   return {
-    name: 'rollup-plugin-copy',
+    name: 'rolldown-plugin-copy',
     writeBundle() {
       for (const file of files) {
         const source = file.from

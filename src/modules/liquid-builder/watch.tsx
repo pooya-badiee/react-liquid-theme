@@ -1,7 +1,7 @@
 import * as path from 'node:path'
 import chalk from 'chalk'
 import chokidar from 'chokidar'
-import { type RollupError, watch as rollupWatch } from 'rollup'
+import { type RolldownError, watch as rolldownWatch } from 'rolldown'
 import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
 import { getConfig } from './config'
 import { PROCESSABLE_EXTENSIONS } from './constants'
@@ -56,7 +56,7 @@ async function handleBundleEnd({
 }
 
 // Handle error event
-function handleBundleError(error: Error | RollupError): void {
+function handleBundleError(error: Error | RolldownError): void {
   console.error(chalk.red('❌ Bundle error:'), error.message)
 }
 
@@ -67,14 +67,14 @@ export function watch(options: BuildOptions) {
   cleanup({ distDir })
 
   let disposer: () => void = () => {}
-  const startRollupWatcher = () => {
+  const startRolldownWatcher = () => {
     let buildStartTime: number | null = null
     let isFirstBuild = true
 
     const allProcessableFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
     console.log(chalk.cyan(`📁 Found ${chalk.bold(allProcessableFiles.length)} snippet files`))
 
-    const watcher = rollupWatch({
+    const watcher = rolldownWatch({
       ...getConfig(allProcessableFiles, {
         css: options.css,
         cwd: rootPath,
@@ -92,6 +92,10 @@ export function watch(options: BuildOptions) {
     watcher.on('event', async (event) => {
       if (event.code === 'BUNDLE_START') {
         buildStartTime = handleBundleStart(isFirstBuild)
+      }
+
+      if (event.code === 'BUNDLE_END' || event.code === 'ERROR') {
+        await event.result.close()
       }
 
       if (event.code === 'BUNDLE_END' && buildStartTime !== null) {
@@ -115,13 +119,13 @@ export function watch(options: BuildOptions) {
     return () => watcher.close()
   }
 
-  disposer = startRollupWatcher()
+  disposer = startRolldownWatcher()
 
   const handleWatchEvent = throttle((filePath: string) => {
     if (!getIsPathProcessable(filePath)) return
 
     disposer()
-    disposer = startRollupWatcher()
+    disposer = startRolldownWatcher()
   }, 100)
 
   const watcher = chokidar

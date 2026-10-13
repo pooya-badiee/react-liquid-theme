@@ -100,7 +100,7 @@ These React components map to Liquid tags or control flow logic:
 
 ## 🧪 Requirements
 
-- Node.js ≥ 20
+- Node.js ^20.19 or ≥ 22.12
 - Peer dependencies:
   - react ≥ 19
   - react-dom ≥ 19

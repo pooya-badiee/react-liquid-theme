@@ -31,10 +31,7 @@ const packageJson = {
 // write the package.json file
 fs.writeFileSync(testProjectPackageJsonPath, JSON.stringify(packageJson, null, 2))
 // pnpm needs explicit approval for dependency build scripts
-fs.writeFileSync(
-  path.join(testProjectPath, 'pnpm-workspace.yaml'),
-  "allowBuilds:\n  '@parcel/watcher': true\n  '@swc/core': true\n",
-)
+fs.writeFileSync(path.join(testProjectPath, 'pnpm-workspace.yaml'), "allowBuilds:\n  '@parcel/watcher': true\n")
 // we now install
 execSync('pnpm install', {
   cwd: testProjectPath,

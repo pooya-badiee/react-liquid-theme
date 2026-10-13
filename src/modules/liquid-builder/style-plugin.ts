@@ -1,10 +1,9 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { createFilter } from '@rollup/pluginutils'
 import postcss from 'postcss'
 import postCssModules from 'postcss-modules'
-import type { InputPluginOption } from 'rollup'
+import type { Plugin } from 'rolldown'
 import { compileString as compileSass, type DeprecationOrId } from 'sass'
 
 interface Options {
@@ -18,8 +17,6 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
     .map(([key, value]) => `${key}: "${String(value).replace(/"/g, '\\"')}"`)
     .join(', ')});`
 
-  const cssFilter = createFilter(['**/*.css'])
-  const scssFilter = createFilter(['**/*.scss'])
   const processor = postcss([])
   const postCssMap = new Map<string, Record<string, string>>()
   const modulesProcessor = postcss([
@@ -38,66 +35,67 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
   let moduleCss: string[] = []
 
   return {
-    name: 'rollup-plugin-liquid-style',
+    name: 'rolldown-plugin-liquid-style',
     buildStart() {
       globalCss = []
       moduleCss = []
       postCssMap.clear()
     },
-    transform: async function (code, id) {
-      const isCss = cssFilter(id)
-      const isScss = scssFilter(id)
-      if (!isCss && !isScss) return
-      const isModule = id.includes('.module.')
-      let compiledCode = code
-      if (isScss) {
-        const compiled = compileSass(`${SASS_ENV_STRING}${code}`, {
-          url: pathToFileURL(id),
-          silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
-          importers: [
-            {
-              findFileUrl(url) {
-                if (url.startsWith('~')) {
-                  const modulePath = findInNodeModules(url)
-                  if (modulePath) {
-                    return pathToFileURL(modulePath)
+    transform: {
+      filter: { id: /\.s?css$/ },
+      async handler(code, id) {
+        const isScss = id.endsWith('.scss')
+        const isModule = id.includes('.module.')
+        let compiledCode = code
+        if (isScss) {
+          const compiled = compileSass(`${SASS_ENV_STRING}${code}`, {
+            url: pathToFileURL(id),
+            silenceDeprecations: sassSilenceDeprecations as DeprecationOrId[],
+            importers: [
+              {
+                findFileUrl(url) {
+                  if (url.startsWith('~')) {
+                    const modulePath = findInNodeModules(url)
+                    if (modulePath) {
+                      return pathToFileURL(modulePath)
+                    }
                   }
-                }
-                return null
+                  return null
+                },
               },
-            },
-          ],
-        })
-        for (const loadedUrl of compiled.loadedUrls) {
-          this.addWatchFile(fileURLToPath(loadedUrl))
+            ],
+          })
+          for (const loadedUrl of compiled.loadedUrls) {
+            this.addWatchFile(fileURLToPath(loadedUrl))
+          }
+          compiledCode = compiled.css
         }
-        compiledCode = compiled.css
-      }
-      const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
-        from: id,
-      })
+        const result = await (isModule ? modulesProcessor : processor).process(compiledCode, {
+          from: id,
+        })
 
-      if (isModule) {
-        moduleCss.push(result.css)
-      } else {
-        globalCss.push(result.css)
-      }
+        if (isModule) {
+          moduleCss.push(result.css)
+        } else {
+          globalCss.push(result.css)
+        }
 
-      if (!isModule) {
+        if (!isModule) {
+          return {
+            code: `export default ${JSON.stringify(result.css)}`,
+            moduleType: 'js',
+            map: null,
+            moduleSideEffects: false,
+          }
+        }
+        const json = postCssMap.get(id)
         return {
-          code: `export default ${JSON.stringify(result.css)}`,
+          code: `export default ${JSON.stringify(json)}; export const css = ${JSON.stringify(result.css)}`,
           moduleType: 'js',
           map: null,
           moduleSideEffects: false,
         }
-      }
-      const json = postCssMap.get(id)
-      return {
-        code: `export default ${JSON.stringify(json)}; export const css = ${JSON.stringify(result.css)}`,
-        moduleType: 'js',
-        map: null,
-        moduleSideEffects: false,
-      }
+      },
     },
     generateBundle() {
       const finalCss = [...globalCss, ...moduleCss].join('\n')
@@ -109,7 +107,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
         source: finalCss,
       })
     },
-  } as const satisfies InputPluginOption
+  } as const satisfies Plugin
 }
 
 const idMap = new Map<string, number>()

@@ -4,7 +4,7 @@ import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import chalk from 'chalk'
 import { glob, globSync } from 'glob'
-import { rollup } from 'rollup'
+import { rolldown } from 'rolldown'
 import { getClientConfig, getConfig } from './config'
 import { PROCESSABLE_EXTENSIONS } from './constants'
 import { renderToString } from './render-to-string'
@@ -19,7 +19,7 @@ export async function build(options: BuildOptions) {
   const allSnippetFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
   console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
 
-  const rollupBuild = await rollup(
+  const bundle = await rolldown(
     getConfig(allSnippetFiles, {
       css: options.css,
       cwd: rootPath,
@@ -32,11 +32,12 @@ export async function build(options: BuildOptions) {
   cleanup({ distDir })
 
   console.log(chalk.magenta('📦 Building bundles'))
-  const { output } = await rollupBuild.write({
+  const { output } = await bundle.write({
     dir: distDir,
     format: 'esm',
     minifyInternalExports: true,
   })
+  await bundle.close()
   const buildTime = Math.round((performance.now() - startTime) * 100) / 100
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
@@ -148,7 +149,7 @@ export async function generateLiquidFiles({
   }
   if (clientFiles.length) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
-    const rollupClientBuild = await rollup(
+    const clientBundle = await rolldown(
       getClientConfig([tempFilePath], {
         css: options.css,
         cwd: rootPath,
@@ -156,10 +157,12 @@ export async function generateLiquidFiles({
         sassSilenceDeprecations: options.sassSilenceDeprecations,
       }),
     )
-    await rollupClientBuild.write({
-      format: 'module',
+    await clientBundle.write({
+      format: 'esm',
       file: path.join(distDir, 'assets', jsOutputFile),
+      minify: true,
     })
+    await clientBundle.close()
     cleanup()
   }
 }

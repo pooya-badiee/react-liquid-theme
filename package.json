@@ -22,7 +22,7 @@
     "format:fix": "biome format --write",
     "lint:fix": "biome lint --unsafe --write",
     "fix": "biome check --unsafe --fix",
-    "build": "rollup -c rollup.config.mjs && tsc -p tsconfig.build.json",
+    "build": "rolldown -c rolldown.config.mjs && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "prepublishOnly": "pnpm build && pnpm test",
     "create-test-project": "node scripts/create-test-project.js"
@@ -59,7 +59,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "~2.5.15",
-    "@rollup/pluginutils": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -71,11 +70,7 @@
     "vitest": "^3"
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "^28",
-    "@rollup/plugin-node-resolve": "^16",
-    "@rollup/plugin-replace": "^6",
     "@shopify/prettier-plugin-liquid": "^1",
-    "@swc/core": "^1",
     "chalk": "^4",
     "chokidar": "^4",
     "dedent": "^1",
@@ -86,9 +81,7 @@
     "postcss": "^8",
     "postcss-modules": "^6",
     "prettier": "^3",
-    "rollup": "^4",
-    "rollup-plugin-swc3": "^0.12.1",
-    "rollup-plugin-tsconfig-paths": "^1",
+    "rolldown": "^1.2.13",
     "yargs": "^17",
     "zod": ">=3.25.0"
   },
@@ -99,7 +92,7 @@
     "typescript": ">=5.8 <7"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "packageManager": "pnpm@11.1.2"
 }
