@@ -2,7 +2,6 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import nodeResolvePlugin from '@rollup/plugin-node-resolve'
-import typescriptPlugin from '@rollup/plugin-typescript'
 import { defineConfig } from 'rollup'
 import swcPlugin from 'rollup-plugin-swc3'
 
@@ -23,12 +22,6 @@ export default defineConfig([
     plugins: [
       nodeResolvePlugin(),
       commonjsPlugin(),
-      typescriptPlugin({
-        declaration: true,
-        outDir: 'dist',
-        include: ['src/**/*.ts', 'src/**/*.tsx'],
-        exclude: ['src/cli.ts', 'src/modules/liquid-builder/**/*.ts', 'src/modules/liquid-builder/**/*.tsx'],
-      }),
       createSwcPlugin(),
       copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' }]),
     ],

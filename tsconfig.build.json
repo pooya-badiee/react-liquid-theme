@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/cli.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/modules/liquid-builder/**/*.ts",
+    "src/modules/liquid-builder/**/*.tsx"
+  ]
+}

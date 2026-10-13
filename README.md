@@ -104,7 +104,7 @@ These React components map to Liquid tags or control flow logic:
 - Peer dependencies:
   - react ≥ 19
   - react-dom ≥ 19
-  - typescript ≥ 5.8
+  - typescript ≥ 5.8, < 7
   - sass >= 1
 
 ---

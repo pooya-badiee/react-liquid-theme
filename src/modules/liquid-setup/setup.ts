@@ -26,7 +26,7 @@ export function setup() {
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
   // Install dependencies
-  execSync('npm install sass typescript react react-dom @types/react @types/react-dom')
+  execSync('npm install sass typescript@^6 react react-dom @types/react @types/react-dom')
 
   // Create tsconfig.json if it doesn't exist
   if (!fs.existsSync(tsconfigPath)) {

@@ -17,7 +17,7 @@ const packageJson = {
   dependencies: {
     react: '^19',
     'react-dom': '^19',
-    typescript: 'latest',
+    typescript: '^6',
     '@types/react': 'latest',
     '@types/react-dom': 'latest',
     'react-liquid-theme': 'file:../react-liquid-theme',

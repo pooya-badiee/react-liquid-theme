@@ -18,6 +18,7 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     // no DOM
     "lib": ["ES2021"],
