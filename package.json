@@ -71,11 +71,7 @@
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1",
-    "chalk": "^4",
-    "chokidar": "^4",
     "dedent": "^1",
-    "dotenv": "^16",
-    "glob": "^11",
     "html-entities": "^2",
     "html-react-parser": "^5",
     "postcss": "^8",

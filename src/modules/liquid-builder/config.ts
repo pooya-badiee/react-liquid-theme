@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { parse as parseEnv } from 'dotenv'
+import { parseEnv } from 'node:util'
 import type { InputOptions } from 'rolldown'
 import { createStylePlugin } from './style-plugin'
 
@@ -87,7 +87,7 @@ function getEnvFromPath(envPath: string): Record<string, string> {
     return {}
   }
   const envContent = fs.readFileSync(envPath, 'utf-8')
-  return parseEnv(envContent)
+  return parseEnv(envContent) as Record<string, string>
 }
 function getEnvDefines(env: Record<string, string>) {
   const viteStyleEnv: Record<string, string> = {}

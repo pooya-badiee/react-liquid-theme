@@ -1,6 +1,6 @@
+import * as fs from 'node:fs'
 import * as path from 'node:path'
-import chalk from 'chalk'
-import chokidar from 'chokidar'
+import { styleText } from 'node:util'
 import { type RolldownError, watch as rolldownWatch } from 'rolldown'
 import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
 import { getConfig } from './config'
@@ -10,7 +10,7 @@ import { throttle } from './utils'
 
 function handleBundleStart(isFirstBuild: boolean): number {
   const buildStartTime = performance.now()
-  console.log(chalk.yellow(isFirstBuild ? '🔄 Building...' : '🔄 Change detected, rebuilding...'))
+  console.log(styleText('yellow', isFirstBuild ? '🔄 Building...' : '🔄 Change detected, rebuilding...'))
   return buildStartTime
 }
 
@@ -39,25 +39,24 @@ async function handleBundleEnd({
       jsOutputFile: options.jsFile,
     })
     await copyAssetFiles({
-      rootPath,
       distDir,
       themeDir: path.join(rootPath, options.theme),
     })
 
     const buildTime = Math.round((performance.now() - buildStartTime) * 100) / 100
     const formattedTime = buildTime > 1000 ? `${(buildTime / 1000).toFixed(1)}s` : `${buildTime}ms`
-    console.log(chalk.green(`✅ Successfully ${isFirstBuild ? 'built' : 'rebuilt'} in ${formattedTime}`))
+    console.log(styleText('green', `✅ Successfully ${isFirstBuild ? 'built' : 'rebuilt'} in ${formattedTime}`))
 
     return false // isFirstBuild = false
   } catch (error) {
-    console.error(chalk.red('❌ Failed to generate Liquid files:'), (error as Error).message)
+    console.error(styleText('red', '❌ Failed to generate Liquid files:'), (error as Error).message)
     return isFirstBuild
   }
 }
 
 // Handle error event
 function handleBundleError(error: Error | RolldownError): void {
-  console.error(chalk.red('❌ Bundle error:'), error.message)
+  console.error(styleText('red', '❌ Bundle error:'), error.message)
 }
 
 export function watch(options: BuildOptions) {
@@ -72,7 +71,7 @@ export function watch(options: BuildOptions) {
     let isFirstBuild = true
 
     const allProcessableFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
-    console.log(chalk.cyan(`📁 Found ${chalk.bold(allProcessableFiles.length)} snippet files`))
+    console.log(styleText('cyan', `📁 Found ${styleText('bold', String(allProcessableFiles.length))} snippet files`))
 
     const watcher = rolldownWatch({
       ...getConfig(allProcessableFiles, {
@@ -87,7 +86,7 @@ export function watch(options: BuildOptions) {
       },
     })
 
-    console.log(chalk.magenta('👀 Watching for changes...'))
+    console.log(styleText('magenta', '👀 Watching for changes...'))
 
     watcher.on('event', async (event) => {
       if (event.code === 'BUNDLE_START') {
@@ -128,19 +127,19 @@ export function watch(options: BuildOptions) {
     disposer = startRolldownWatcher()
   }, 100)
 
-  const watcher = chokidar
-    .watch(path.resolve(rootPath, options.source), {
-      ignoreInitial: true,
+  const sourceDir = path.resolve(rootPath, options.source)
+  // `rename` fires when files are added or removed
+  const watcher = fs
+    .watch(sourceDir, { recursive: true }, (eventType, fileName) => {
+      if (eventType === 'rename' && fileName) handleWatchEvent(path.join(sourceDir, fileName))
     })
-    .on('add', handleWatchEvent)
-    .on('unlink', handleWatchEvent)
     .on('error', (error) => {
-      console.error(chalk.red('❌ Watcher error:'), (error as Error).message)
+      console.error(styleText('red', '❌ Watcher error:'), error.message)
     })
 
   // Clean shutdown handling
   process.on('SIGINT', () => {
-    console.log(chalk.blue('👋 Shutting down watchers...'))
+    console.log(styleText('blue', '👋 Shutting down watchers...'))
     disposer()
     watcher.close()
     process.exit(0)

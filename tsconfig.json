@@ -22,6 +22,7 @@
     "esModuleInterop": true,
     // no DOM
     "lib": ["ES2025"],
+    "types": ["node"],
     "target": "ES2025",
     "moduleResolution": "bundler",
     "module": "Preserve",

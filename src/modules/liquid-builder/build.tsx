@@ -2,8 +2,7 @@ import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import chalk from 'chalk'
-import { glob, globSync } from 'glob'
+import { styleText } from 'node:util'
 import { rolldown } from 'rolldown'
 import { getClientConfig, getConfig } from './config'
 import { PROCESSABLE_EXTENSIONS } from './constants'
@@ -13,11 +12,11 @@ import { getOneFileThatImportsAllFiles } from './utils'
 
 export async function build(options: BuildOptions) {
   const startTime = performance.now()
-  console.log(chalk.blue.bold('🚀 Starting build process'))
+  console.log(styleText(['blue', 'bold'], '🚀 Starting build process'))
 
   const rootPath = path.resolve(process.cwd())
   const allSnippetFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
-  console.log(chalk.cyan(`📁 Found ${chalk.bold(allSnippetFiles.length)} snippet files`))
+  console.log(styleText('cyan', `📁 Found ${styleText('bold', String(allSnippetFiles.length))} snippet files`))
 
   const bundle = await rolldown(
     getConfig(allSnippetFiles, {
@@ -31,7 +30,7 @@ export async function build(options: BuildOptions) {
   const distDir = path.join(rootPath, options.dist)
   cleanup({ distDir })
 
-  console.log(chalk.magenta('📦 Building bundles'))
+  console.log(styleText('magenta', '📦 Building bundles'))
   const { output } = await bundle.write({
     dir: distDir,
     format: 'esm',
@@ -42,8 +41,9 @@ export async function build(options: BuildOptions) {
   const formattedBuildTime = buildTime > 1000 ? `${Math.round(buildTime / 100) / 10}s` : `${buildTime}ms`
 
   console.log(
-    chalk.green(
-      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${chalk.bold(output.length)} outputs`,
+    styleText(
+      'green',
+      `✅ Bundle creation complete in ${formattedBuildTime}, processing ${styleText('bold', String(output.length))} outputs`,
     ),
   )
 
@@ -58,18 +58,21 @@ export async function build(options: BuildOptions) {
       sourcePath: options.source,
       jsOutputFile: options.jsFile,
     })
-    await copyAssetFiles({ distDir, themeDir: path.join(rootPath, options.theme), rootPath })
+    await copyAssetFiles({ distDir, themeDir: path.join(rootPath, options.theme) })
     const processingTime = Math.round((performance.now() - processingStartTime) * 100) / 100
     const formattedProcessingTime =
       processingTime > 1000 ? `${Math.round(processingTime / 100) / 10}s` : `${processingTime}ms`
     console.log(
-      chalk.green(`✅ Successfully generates ${chalk.bold(output.length)} snippets in ${formattedProcessingTime}`),
+      styleText(
+        'green',
+        `✅ Successfully generates ${styleText('bold', String(output.length))} snippets in ${formattedProcessingTime}`,
+      ),
     )
     console.log('\n\n')
-    console.log(chalk.bgGreen.black.bold(' BUILD COMPLETE '))
+    console.log(styleText(['bgGreen', 'black', 'bold'], ' BUILD COMPLETE '))
   } catch (error) {
     const assertedError = error as Error
-    console.error(chalk.red('❌ Failed to generate Liquid files:'), assertedError.message)
+    console.error(styleText('red', '❌ Failed to generate Liquid files:'), assertedError.message)
   }
 }
 
@@ -83,8 +86,7 @@ export function getAllProcessableFiles({ sourcePath, rootPath }: { sourcePath: s
     ]),
   )
 
-  const allProcessableFiles = globSync(patterns, { cwd: rootPath, absolute: true })
-  return allProcessableFiles
+  return fs.globSync(patterns, { cwd: rootPath }).map((file) => path.resolve(rootPath, file))
 }
 export function cleanup({ distDir }: { distDir: string }) {
   if (fs.existsSync(distDir)) {
@@ -206,31 +208,21 @@ function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: strin
   return fileInfos
 }
 
-export async function copyAssetFiles({
-  distDir,
-  themeDir,
-  rootPath,
-}: {
-  distDir: string
-  themeDir: string
-  rootPath: string
-}) {
-  const assetFiles = await glob(path.posix.join(distDir, 'assets/**/*'), {
-    nodir: true,
-    absolute: true,
-    cwd: rootPath,
-  })
+export async function copyAssetFiles({ distDir, themeDir }: { distDir: string; themeDir: string }) {
+  const copies: Promise<void>[] = []
 
-  await Promise.all(
-    assetFiles.map(async (assetFile) => {
-      const relativePath = path.relative(distDir, assetFile)
-      const targetPath = path.join(themeDir, relativePath)
-      const targetDir = path.dirname(targetPath)
+  for await (const dirent of fsPromises.glob('assets/**/*', { cwd: distDir, withFileTypes: true })) {
+    if (!dirent.isFile()) continue
+    const assetFile = path.join(dirent.parentPath, dirent.name)
+    const targetPath = path.join(themeDir, path.relative(distDir, assetFile))
+    copies.push(
+      fsPromises
+        .mkdir(path.dirname(targetPath), { recursive: true })
+        .then(() => fsPromises.copyFile(assetFile, targetPath)),
+    )
+  }
 
-      await fsPromises.mkdir(targetDir, { recursive: true })
-      await fsPromises.copyFile(assetFile, targetPath)
-    }),
-  )
+  await Promise.all(copies)
 }
 
 export function parseProcessableFilePath(filepath: string) {
