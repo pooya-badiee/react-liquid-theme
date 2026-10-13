@@ -24,7 +24,7 @@
     "fix": "biome check --unsafe --fix",
     "build": "rollup -c rollup.config.mjs",
     "test": "vitest run",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "pnpm build && pnpm test",
     "create-test-project": "node scripts/create-test-project.js"
   },
   "bin": {
@@ -102,5 +102,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "packageManager": "pnpm@11.1.2"
 }
