@@ -67,18 +67,18 @@
     "react-dom": "^19",
     "sass": "^1",
     "typescript": "~6.0.3",
-    "vitest": "^3"
+    "vitest": "^5"
   },
   "dependencies": {
     "@shopify/prettier-plugin-liquid": "^1",
     "dedent": "^1",
     "html-entities": "^2",
-    "html-react-parser": "^5",
+    "html-react-parser": "^6",
     "postcss": "^8",
-    "postcss-modules": "^6",
+    "postcss-modules": "^9",
     "prettier": "^3",
     "rolldown": "^1.2.13",
-    "yargs": "^17",
+    "yargs": "^18",
     "zod": ">=3.25.0"
   },
   "peerDependencies": {
