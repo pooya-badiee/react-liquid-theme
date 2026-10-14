@@ -6,6 +6,12 @@ export interface LiquidTagProps extends BaseLiquidTagProps {
   statement?: string
 }
 
+/**
+ * Any block tag: `{% name statement %}children{% endname %}`. Use for tags without a dedicated
+ * component (`form`, `paginate`, `style`, `schema`, ...).
+ *
+ * @example <LiquidTag name="form" statement="'product', product">...</LiquidTag>
+ */
 export function LiquidTag({
   name,
   statement,

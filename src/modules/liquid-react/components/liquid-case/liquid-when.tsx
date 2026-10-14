@@ -5,6 +5,10 @@ export interface LiquidWhenProps extends BaseSelfClosingLiquidTagProps {
   children?: React.ReactNode
 }
 
+/**
+ * `{% when value %}` followed by children. Must be a child of `LiquidCase`, it has no closing tag.
+ * `value` is Liquid source: `"'a'"`, `"'a', 'b'"`.
+ */
 export function LiquidWhen({ value, children, ...otherProps }: LiquidWhenProps) {
   return (
     <>

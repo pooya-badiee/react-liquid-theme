@@ -13,7 +13,8 @@
   },
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "version": "0.12.0",
   "scripts": {

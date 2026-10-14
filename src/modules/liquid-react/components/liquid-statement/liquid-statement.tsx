@@ -7,6 +7,9 @@ export interface LiquidStatementProps {
   rightTrim?: boolean
 }
 
+/**
+ * `{% liquid statement %}`, one Liquid tag per line, without delimiters.
+ */
 export function LiquidStatement({ statement, leftTrim, rightTrim }: LiquidStatementProps) {
   return (
     <HtmlDecoder>{dedent`

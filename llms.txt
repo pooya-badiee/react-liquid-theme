@@ -1,0 +1,326 @@
+# react-liquid-theme
+
+> Build Shopify theme `.liquid` files from React (TSX) components. Components are rendered ONCE at build time
+> (in Node, via `react-dom/server`) into Liquid templates. React never runs in the browser. Liquid logic is
+> written as strings passed to `Liquid*` components; Shopify evaluates it at request time.
+
+This file is a guide for AI assistants writing code in a project that uses `react-liquid-theme`.
+
+## Mental model
+
+- A `*.snippet.tsx` file's default export is a React component with NO props. It is rendered to static markup,
+  formatted with Prettier, and written to `theme/snippets/<name>.liquid`.
+- There is no runtime React: no state, effects, event handlers, context from the page, or props from Shopify.
+  `useState`, `onClick`, etc. do nothing useful. Dynamic data comes from Liquid (`product.title`, `section.settings.x`).
+- JS values are evaluated at build time. `{items.map(...)}` over a JS array unrolls into static HTML;
+  `<LiquidFor statement="item in collection.products">` loops at request time in Shopify.
+- Interactivity goes in a sibling `*.client.ts` file (plain DOM / custom elements), bundled into `theme/assets/main.js`.
+- Reusable React components in non-suffixed files (e.g. `src/components/button.tsx`) are inlined into every file that
+  imports them. Use `LiquidRender` + a snippet instead when the markup should exist once in the theme.
+
+## Exports
+
+```ts
+// Liquid components + JSON helpers + decoding helpers
+import { LiquidIf, LiquidFor, LiquidExpression, LiquidJson, liquid, when, each, raw, toLiquidJson,
+         HtmlDecoder, makeDecodable } from 'react-liquid-theme'
+import { defineJsxTag } from 'react-liquid-theme/utils' // custom element tag names in JSX
+import { defineOptions } from 'react-liquid-theme/config' // theme.config.js
+```
+
+`src/global.d.ts` must contain `/// <reference types="react-liquid-theme/declarations" />` (types for CSS/SCSS
+imports and `import.meta.env`).
+
+## File naming -> theme output
+
+Files are discovered under the source dir (default `src`, any depth). Pattern: `<name>.<type>.tsx|ts`.
+Output file name is `<name>` (everything before `.<type>`); subfolders are flattened, so names must be unique per type.
+
+| Source                      | Output                          |
+| --------------------------- | ------------------------------- |
+| `hero.section.tsx`          | `theme/sections/hero.liquid`    |
+| `card.snippet.tsx`          | `theme/snippets/card.liquid`    |
+| `product.template.tsx`      | `theme/templates/product.liquid`|
+| `theme.layout.tsx`          | `theme/layout/theme.liquid`     |
+| `group.block.tsx`           | `theme/blocks/group.liquid`     |
+| `settings_schema.config.ts` | `theme/config/settings_schema.<ext>` (see `fileInfo`) |
+| `en.default.locale.ts`      | `theme/locales/en.default.<ext>`|
+| `foo.asset.ts`              | `theme/assets/foo.<ext>`        |
+| `card.snippet.client.ts`    | bundled into `theme/assets/main.js` |
+
+Client files MUST be named `<name>.<type>.client.ts(x)` (`.client` right before the extension) and only get bundled
+when a matching server file (`<name>.<type>.tsx`) exists.
+
+### Non-Liquid outputs (`fileInfo`)
+
+A file can export `fileInfo` to change the output extension and render mode:
+
+```ts
+// src/settings_schema.config.ts -> theme/config/settings_schema.json
+export const fileInfo = { extension: 'json', renderType: 'string' }
+export default function () {
+  return JSON.stringify([{ name: 'theme_info', theme_name: 'My theme' }], null, 2)
+}
+```
+
+- `renderType: 'jsx'` (default): default export is a component, rendered to Liquid/HTML.
+- `renderType: 'string'`: default export is a function returning the file content as a string (written as is).
+- `extension` defaults to `'liquid'`.
+
+## Writing Liquid in JSX
+
+### Rule: never put Liquid with quotes or `<`, `>`, `&` in plain JSX text or attributes
+
+React HTML-escapes strings. `{"{{ 'x' | t }}"}` renders as `{{ &#x27;x&#x27; | t }}`, which is broken Liquid.
+
+```tsx
+// text output: use LiquidExpression
+<h1><LiquidExpression expression="'general.title' | t" /></h1>
+
+// attributes: plain strings are fine only with no quotes / special chars
+<a href="{{ product.url }}">...</a>
+// otherwise wrap the value in makeDecodable
+<img alt={makeDecodable("{{ product.title | escape }}")} src={makeDecodable("{{ image | image_url: width: 600 }}")} />
+
+// any other raw Liquid/HTML string that must not be escaped
+<HtmlDecoder>{"{{ 'a' | append: \"b\" }}"}</HtmlDecoder>
+```
+
+Conditions/statements passed to `Liquid*` components are never escaped, so `condition="a > b and c == 'd'"` is fine.
+
+### Control flow
+
+```tsx
+<LiquidIf condition="product.available">
+  <span>In stock</span>
+  <LiquidElseIf condition="product.tags contains 'preorder'">
+    <span>Preorder</span>
+  </LiquidElseIf>
+  <LiquidElse>
+    <span>Sold out</span>
+  </LiquidElse>
+</LiquidIf>
+```
+
+`LiquidElseIf`, `LiquidElse` and `LiquidWhen` are placed INSIDE the parent (`LiquidIf`/`LiquidUnless`/`LiquidCase`).
+They emit their tag followed by their children; nothing closes them.
+
+```tsx
+<LiquidCase variable="section.settings.layout">
+  <LiquidWhen value="'grid'"><Grid /></LiquidWhen>
+  <LiquidWhen value="'list', 'stack'"><List /></LiquidWhen>
+  <LiquidElse><Fallback /></LiquidElse>
+</LiquidCase>
+
+<LiquidFor statement="product in collection.products limit: 4">
+  <LiquidRender statement="'product-card', product: product" />
+  <LiquidIf condition="forloop.index == 2"><LiquidBreak /></LiquidIf>
+</LiquidFor>
+```
+
+### Component reference
+
+Block tags (wrap children, emit `{% x %}...{% endx %}`):
+
+| Component        | Props                     | Output                                    |
+| ---------------- | ------------------------- | ----------------------------------------- |
+| `LiquidIf`       | `condition`               | `{% if condition %}...{% endif %}`        |
+| `LiquidUnless`   | `condition`               | `{% unless condition %}...{% endunless %}`|
+| `LiquidCase`     | `variable`                | `{% case variable %}...{% endcase %}`     |
+| `LiquidFor`      | `statement`               | `{% for statement %}...{% endfor %}`      |
+| `LiquidTablerow` | `statement`               | `{% tablerow statement %}...` (inside `<table>`) |
+| `LiquidCapture`  | `variableName`            | `{% capture variableName %}...`           |
+| `LiquidComment`  | -                         | `{% comment %}...{% endcomment %}`        |
+| `LiquidRawTag`   | -                         | `{% raw %}...{% endraw %}`                |
+| `LiquidTag`      | `name`, `statement?`      | `{% name statement %}...{% endname %}` (any block tag: `form`, `paginate`, `schema`, `style`, `javascript`, ...) |
+
+Single tags:
+
+| Component             | Props                  | Output                               |
+| --------------------- | ---------------------- | ------------------------------------ |
+| `LiquidElseIf`        | `condition`, children  | `{% elsif condition %}` + children   |
+| `LiquidElse`          | children               | `{% else %}` + children              |
+| `LiquidWhen`          | `value`, children      | `{% when value %}` + children        |
+| `LiquidAssign`        | `name`, `value`        | `{% assign name = value %}`          |
+| `LiquidEcho`          | `expression`           | `{% echo expression %}`              |
+| `LiquidRender`        | `statement`            | `{% render statement %}`             |
+| `LiquidCycle`         | `values: string[]`, `group?` | `{% cycle group: v1, v2 %}`    |
+| `LiquidIncrement`     | `variableName`         | `{% increment variableName %}`       |
+| `LiquidDecrement`     | `variableName`         | `{% decrement variableName %}`       |
+| `LiquidInlineComment` | `comment`              | `{% # comment %}`                    |
+| `LiquidBreak`         | -                      | `{% break %}`                        |
+| `LiquidContinue`      | -                      | `{% continue %}`                     |
+| `LiquidSelfClosingTag`| `name`, `statement?`   | `{% name statement %}` (any single tag: `section`, `sections`, `content_for`, `layout`, ...) |
+| `LiquidExpression`    | `expression`           | `{{ expression }}`                   |
+| `LiquidStatement`     | `statement` (multiline)| `{% liquid statement %}`             |
+
+Other:
+
+- `LiquidRaw` (`liquid: string`): parses an HTML/Liquid string into React elements. Text inside it is still escaped,
+  so quoted Liquid in text breaks; prefer `HtmlDecoder` for verbatim strings.
+- `LiquidJson` / `LiquidScript`: see below.
+- All values (`condition`, `statement`, `value`, ...) are raw Liquid source strings. String literals need Liquid quotes:
+  `value="'grid'"`, `name="title" value="'Hello'"`.
+
+### Whitespace control
+
+Single tags and `LiquidExpression`: `leftTrim` -> `{%-` / `{{-`, `rightTrim` -> `-%}` / `-}}`.
+
+Block tags have two tags, so four flags:
+
+- `leftTrim`: `{%-` on the opening tag
+- `leftBeginTrim`: `-%}` on the opening tag
+- `rightTrim`: `{%-` on the closing tag
+- `rightBeginTrim`: `-%}` on the closing tag
+
+## Sections: `{% schema %}`
+
+```tsx
+// src/hero.section.tsx
+import { HtmlDecoder, LiquidExpression, LiquidTag } from 'react-liquid-theme'
+
+const schema = {
+  name: 'Hero',
+  settings: [{ type: 'text', id: 'title', label: 'Title', default: 'Welcome' }],
+  presets: [{ name: 'Hero' }],
+}
+
+export default function HeroSection() {
+  return (
+    <>
+      <section className="hero">
+        <h1><LiquidExpression expression="section.settings.title | escape" /></h1>
+      </section>
+      <LiquidTag name="schema">
+        <HtmlDecoder>{JSON.stringify(schema, null, 2)}</HtmlDecoder>
+      </LiquidTag>
+    </>
+  )
+}
+```
+
+`HtmlDecoder` is required, otherwise the JSON quotes are HTML-escaped.
+
+## `<script>` with Liquid
+
+React only allows one string inside `<script>`, so Liquid components cannot be nested in a plain `<script>`.
+
+`LiquidJson` builds JSON from a JS object; helpers mark the dynamic parts:
+
+```tsx
+<LiquidJson
+  type="application/ld+json"
+  value={{
+    '@type': 'Product',
+    name: liquid('product.title'),                         // {{ product.title | json }}
+    availability: when('product.available', 'InStock', 'OutOfStock'),
+    sku: when('product.selected_or_first_available_variant.sku != blank',
+              liquid('product.selected_or_first_available_variant.sku')), // key omitted if falsy
+    offers: each('variant in product.variants',
+                 { price: liquid('variant.price | divided_by: 100.0') },
+                 { setup: 'assign ok = variant.available', where: 'ok' }),
+    related: raw("{% render 'related-json' %}"),           // Liquid that already outputs JSON
+  }}
+/>
+```
+
+- `liquid(expr)` -> `{{ expr | json }}` (do not add `| json` yourself)
+- `when(cond, then)` -> key/array item omitted when falsy (`null` if used as a bare value)
+- `when(cond, then, otherwise)` -> either value
+- `each(statement, item, { setup?, where? })` -> JSON array from `{% for %}`; `where` skips iterations
+- `raw(liquid)` -> inserted as is
+- Plain JS values are serialized and escaped at build time. Commas are handled automatically.
+- `toLiquidJson(value)` returns the same Liquid as a string.
+
+`LiquidScript` for arbitrary JS, with a string `value` or Liquid component children (not both):
+
+```tsx
+<LiquidScript value={`window.product = {{ product | json }}`} />
+<LiquidScript value={`window.data = ${toLiquidJson({ id: liquid('product.id') })}`} />
+<LiquidScript>
+  {'window.ids = ['}
+  <LiquidFor statement="p in products">
+    <LiquidExpression expression="p.id" />
+    <LiquidUnless condition="forloop.last">,</LiquidUnless>
+  </LiquidFor>
+  {']'}
+</LiquidScript>
+```
+
+## Client-side JS
+
+```tsx
+// src/counter.snippet.tsx
+import { defineJsxTag } from 'react-liquid-theme/utils'
+const AppCounter = defineJsxTag('app-counter') // typed as 'div' so JSX accepts it; use data-* for custom attrs
+
+export default function CounterSnippet() {
+  return <AppCounter data-start="{{ start | default: 0 }}"><button type="button">+</button></AppCounter>
+}
+```
+
+```ts
+// src/counter.snippet.client.ts  -> bundled into theme/assets/main.js
+class AppCounter extends HTMLElement {
+  connectedCallback() { /* ... */ }
+}
+customElements.define('app-counter', AppCounter)
+```
+
+- All client files are bundled into one ESM file (`main.js` by default, browser target, minified). The theme must load
+  it (e.g. `<script src="{{ 'main.js' | asset_url }}" type="module" defer></script>` in the layout).
+- Prefer vanilla DOM / custom elements. JSX in client files compiles against `preact`, which is NOT bundled.
+- Client files run only in the browser; server files run only in Node at build time. Browser APIs (`window`,
+  `HTMLElement`) must not be touched in server files.
+
+## Styles
+
+- Import `.css`, `.scss`, `.module.css`, `.module.scss` from any server or client file.
+- All imported CSS is concatenated into `theme/assets/main.css` (name set by `--css`). The theme must include it
+  (`{{ 'main.css' | asset_url | stylesheet_tag }}`).
+- CSS modules: `import classes from './card.module.scss'` -> `classes.root` is the scoped class name (`root__<n>`).
+- SCSS files get a global `$env` map built from the `.env` file, and `~pkg/path` imports resolve from `node_modules`.
+
+## Environment variables
+
+Values from `.env` (path set by `--env`) are inlined as `import.meta.env.KEY` in server and client files
+(only keys that are valid JS identifiers).
+
+## CLI and config
+
+```bash
+npx react-liquid-theme setup              # scaffold package.json scripts, tsconfig, example snippet
+npx react-liquid-theme generate           # build once
+npx react-liquid-theme generate --watch   # rebuild on change (only changed files are rewritten)
+```
+
+Options (CLI flags override `theme.config.js`):
+
+| Option   | Default         | Meaning                                       |
+| -------- | --------------- | --------------------------------------------- |
+| `source` | `src`           | React source dir                              |
+| `dist`   | `.react-liquid` | intermediate JS build (gitignore it)          |
+| `theme`  | `theme`         | Shopify theme dir that receives output        |
+| `css`    | `main.css`      | CSS bundle name in `theme/assets`             |
+| `js`     | `main.js`       | client JS bundle name in `theme/assets`       |
+| `env`    | `.env`          | env file                                      |
+| `sassSilenceDeprecations` | - | config file only, passed to Sass        |
+
+```js
+// theme.config.js
+import { defineOptions } from 'react-liquid-theme/config'
+export default defineOptions({ theme: 'shopify-theme' })
+```
+
+Recommended `tsconfig.json`: `{ "compilerOptions": { "jsx": "preserve", "module": "preserve",
+"moduleResolution": "bundler", "skipLibCheck": true, "target": "esnext" } }`. Project must be ESM (`"type": "module"`).
+
+## Rules of thumb for AI assistants
+
+1. Never edit generated files in the theme dir (they start with an `AUTO-GENERATED` comment); edit `src/` instead.
+2. Liquid text output -> `LiquidExpression`; Liquid in attributes with quotes -> `makeDecodable`.
+3. Liquid string literals inside props need their own quotes: `condition="handle == 'home'"`.
+4. Use JS (`map`, constants, helper components) for things known at build time, Liquid components for things
+   known only at request time.
+5. No React runtime features (hooks, event handlers, props on the default export).
+6. Reach for `LiquidTag` / `LiquidSelfClosingTag` for any Liquid tag without a dedicated component.

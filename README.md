@@ -172,6 +172,17 @@ For any other script, use `LiquidScript` with either a string `value` or Liquid 
 
 ---
 
+## 🤖 AI Assistants
+
+The package ships an AI-oriented guide at `node_modules/react-liquid-theme/llms.txt`.
+Point your assistant at it, e.g. in your project's `CLAUDE.md` / `AGENTS.md`:
+
+```md
+This project uses react-liquid-theme. Read node_modules/react-liquid-theme/llms.txt before editing src/.
+```
+
+---
+
 ## 🧪 Requirements
 
 - Node.js ≥ 24

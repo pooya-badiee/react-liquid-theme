@@ -5,6 +5,9 @@ export interface LiquidElseIfProps extends BaseSelfClosingLiquidTagProps {
   children?: React.ReactNode
 }
 
+/**
+ * `{% elsif condition %}` followed by children. Must be a child of `LiquidIf`, it has no closing tag.
+ */
 export function LiquidElseIf({ condition, children, ...otherProps }: LiquidElseIfProps) {
   return (
     <>
