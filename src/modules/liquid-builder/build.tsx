@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import * as path from 'node:path'
@@ -101,6 +102,7 @@ export async function generateLiquidFiles({
   options,
   sourcePath,
   jsOutputFile,
+  cache,
 }: {
   distDir: string
   allProcessableFiles: string[]
@@ -109,47 +111,58 @@ export async function generateLiquidFiles({
   sourcePath: string
   jsOutputFile: string
   sassSilenceDeprecations?: string[]
-}) {
+  /** when given, only files whose bundled output changed since the last call are regenerated */
+  cache?: GenerationCache
+}): Promise<{ generatedCount: number }> {
   const filesToExecute = getAllToExecuteFiles({ distDir, allProcessableFiles })
-  const clientFiles: string[] = []
-  for (const { filePath, targetFileNameWithoutExtension, targetFolder, clientFilePath } of filesToExecute) {
-    if (clientFilePath) {
-      clientFiles.push(clientFilePath)
-    }
-    const fileUrl = pathToFileURL(filePath).toString()
-    // preventing caching
-    const noCacheUrl = `${fileUrl}?update=${Date.now()}`
-    const module = await import(noCacheUrl)
-    const fileInfo = {
-      extension: 'liquid',
-      renderType: 'jsx',
-      ...(module.fileInfo ?? {}),
-    }
+  const clientFiles = filesToExecute.flatMap(({ clientFilePath }) => (clientFilePath ? [clientFilePath] : []))
 
-    let outputString = ''
-    if (fileInfo.renderType === 'jsx') {
-      const Component = module.default
-      outputString = await renderToString(<Component />, { leaveComment: true })
-    } else {
-      // string render
-      outputString = module.default()
-    }
-
-    const outputFilePath = path.join(
-      rootPath,
-      options.theme,
-      targetFolder,
-      `${targetFileNameWithoutExtension}.${fileInfo.extension}`,
-    )
-    const outputFileDir = path.dirname(outputFilePath)
-
-    if (!fs.existsSync(outputFileDir)) {
-      fs.mkdirSync(outputFileDir, { recursive: true })
-    }
-
-    fs.writeFileSync(outputFilePath, outputString)
+  // chunk file names contain a content hash, so an entry's own content changes whenever anything it imports changes
+  const nextHashes = new Map<string, string>()
+  const getIsChanged = (distFilePath: string) => {
+    const hash = hashFile(distFilePath)
+    nextHashes.set(distFilePath, hash)
+    return cache?.hashes.get(distFilePath) !== hash
   }
-  if (clientFiles.length) {
+  const changedFiles = filesToExecute.filter(({ filePath }) => getIsChanged(filePath))
+  // the server bundle includes the client files too, so their output tells whether the client bundle is stale
+  const changedClientFiles = filesToExecute.filter(
+    ({ clientDistFilePath }) => clientDistFilePath && getIsChanged(clientDistFilePath),
+  )
+  const clientFilesKey = clientFiles.join('\n')
+  const isClientBundleStale = !cache || changedClientFiles.length > 0 || cache.clientFilesKey !== clientFilesKey
+
+  await Promise.all(
+    changedFiles.map(async ({ filePath, targetFileNameWithoutExtension, targetFolder }) => {
+      const fileUrl = pathToFileURL(filePath).toString()
+      // a new hash means new content, so the module cache has to be bypassed
+      const module = await import(`${fileUrl}?hash=${nextHashes.get(filePath)}`)
+      const fileInfo = {
+        extension: 'liquid',
+        renderType: 'jsx',
+        ...(module.fileInfo ?? {}),
+      }
+
+      let outputString = ''
+      if (fileInfo.renderType === 'jsx') {
+        const Component = module.default
+        outputString = await renderToString(<Component />, { leaveComment: true })
+      } else {
+        // string render
+        outputString = module.default()
+      }
+
+      const outputFilePath = path.join(
+        rootPath,
+        options.theme,
+        targetFolder,
+        `${targetFileNameWithoutExtension}.${fileInfo.extension}`,
+      )
+      await writeFileIfChanged(outputFilePath, outputString)
+    }),
+  )
+
+  if (clientFiles.length && isClientBundleStale) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
     const clientBundle = await rolldown(
       getClientConfig([tempFilePath], {
@@ -167,6 +180,33 @@ export async function generateLiquidFiles({
     await clientBundle.close()
     cleanup()
   }
+
+  // only stored after everything succeeded, so failed files are retried on the next call
+  if (cache) {
+    for (const [distFilePath, hash] of nextHashes) cache.hashes.set(distFilePath, hash)
+    cache.clientFilesKey = clientFilesKey
+  }
+
+  return { generatedCount: changedFiles.length }
+}
+
+export type GenerationCache = {
+  /** dist file path -> content hash of the output that was last generated from it */
+  hashes: Map<string, string>
+  clientFilesKey?: string
+}
+
+function hashFile(filePath: string) {
+  if (!fs.existsSync(filePath)) return ''
+  return createHash('sha1').update(fs.readFileSync(filePath)).digest('hex')
+}
+
+// unchanged files are not touched, so theme file watchers (e.g. `shopify theme dev`) only see real changes
+async function writeFileIfChanged(filePath: string, content: string | Buffer) {
+  const existing = await fsPromises.readFile(filePath).catch(() => null)
+  if (existing?.equals(Buffer.from(content))) return
+  await fsPromises.mkdir(path.dirname(filePath), { recursive: true })
+  await fsPromises.writeFile(filePath, content)
 }
 
 function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: string; allProcessableFiles: string[] }) {
@@ -192,6 +232,7 @@ function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: strin
     targetFileNameWithoutExtension: string
     targetFolder: string
     clientFilePath: string | null
+    clientDistFilePath: string | null
   }
   const fileInfos: FileInfo[] = []
   for (const { client, server } of Object.values(groupedFiles)) {
@@ -202,6 +243,9 @@ function getAllToExecuteFiles({ distDir, allProcessableFiles }: { distDir: strin
       targetFileNameWithoutExtension: server.fileName,
       targetFolder: getTargetFolder(server.fileSemiExtension),
       clientFilePath: client?.sourceFilePath || null,
+      clientDistFilePath: client
+        ? path.join(distDir, `${client.fileName}.${client.fileSemiExtension}.client.js`)
+        : null,
     })
   }
 
@@ -215,11 +259,7 @@ export async function copyAssetFiles({ distDir, themeDir }: { distDir: string; t
     if (!dirent.isFile()) continue
     const assetFile = path.join(dirent.parentPath, dirent.name)
     const targetPath = path.join(themeDir, path.relative(distDir, assetFile))
-    copies.push(
-      fsPromises
-        .mkdir(path.dirname(targetPath), { recursive: true })
-        .then(() => fsPromises.copyFile(assetFile, targetPath)),
-    )
+    copies.push(fsPromises.readFile(assetFile).then((content) => writeFileIfChanged(targetPath, content)))
   }
 
   await Promise.all(copies)

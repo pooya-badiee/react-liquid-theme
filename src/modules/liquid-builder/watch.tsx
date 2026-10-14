@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { styleText } from 'node:util'
 import { type RolldownError, watch as rolldownWatch } from 'rolldown'
-import { cleanup, copyAssetFiles, generateLiquidFiles, getAllProcessableFiles } from './build'
+import { cleanup, copyAssetFiles, type GenerationCache, generateLiquidFiles, getAllProcessableFiles } from './build'
 import { getConfig } from './config'
 import { PROCESSABLE_EXTENSIONS } from './constants'
 import type { BuildOptions } from './types'
@@ -21,6 +21,7 @@ async function handleBundleEnd({
   distDir,
   rootPath,
   options,
+  cache,
 }: {
   buildStartTime: number
   isFirstBuild: boolean
@@ -28,15 +29,17 @@ async function handleBundleEnd({
   distDir: string
   rootPath: string
   options: BuildOptions
+  cache: GenerationCache
 }): Promise<boolean> {
   try {
-    await generateLiquidFiles({
+    const { generatedCount } = await generateLiquidFiles({
       allProcessableFiles,
       distDir,
       rootPath,
       options,
       sourcePath: options.source,
       jsOutputFile: options.jsFile,
+      cache,
     })
     await copyAssetFiles({
       distDir,
@@ -45,7 +48,10 @@ async function handleBundleEnd({
 
     const buildTime = Math.round((performance.now() - buildStartTime) * 100) / 100
     const formattedTime = buildTime > 1000 ? `${(buildTime / 1000).toFixed(1)}s` : `${buildTime}ms`
-    console.log(styleText('green', `✅ Successfully ${isFirstBuild ? 'built' : 'rebuilt'} in ${formattedTime}`))
+    const fileCount = `${generatedCount} ${generatedCount === 1 ? 'file' : 'files'}`
+    console.log(
+      styleText('green', `✅ Successfully ${isFirstBuild ? 'built' : 'rebuilt'} ${fileCount} in ${formattedTime}`),
+    )
 
     return false // isFirstBuild = false
   } catch (error) {
@@ -65,6 +71,8 @@ export function watch(options: BuildOptions) {
 
   cleanup({ distDir })
 
+  // kept across watcher restarts, so adding or removing a file doesn't regenerate everything
+  const cache: GenerationCache = { hashes: new Map() }
   let disposer: () => void = () => {}
   const startRolldownWatcher = () => {
     let buildStartTime: number | null = null
@@ -83,6 +91,8 @@ export function watch(options: BuildOptions) {
       output: {
         dir: path.join(rootPath, options.dist),
         format: 'esm',
+        // change detection in `generateLiquidFiles` relies on chunk names changing with their content
+        chunkFileNames: '[name]-[hash].js',
       },
     })
 
@@ -105,6 +115,7 @@ export function watch(options: BuildOptions) {
           distDir,
           rootPath,
           options,
+          cache,
         })
         buildStartTime = null
       }
