@@ -109,6 +109,66 @@ These React components map to Liquid tags or control flow logic:
 | `LiquidExpression`    | `{{ expression }}`                |
 | `LiquidRaw`           | Parses a Liquid string into React |
 | `LiquidTag`           | Can create any tag                |
+| `LiquidJson`          | `<script>` with Liquid-built JSON |
+| `LiquidScript`        | `<script>` with Liquid inside     |
+
+---
+
+## 🧾 JSON Scripts
+
+React only allows a single string inside `<script>`, so Liquid components cannot be nested there.
+Use `LiquidJson` to build `application/json` or `application/ld+json` scripts from a plain object:
+
+```tsx
+import { each, LiquidJson, liquid, when } from 'react-liquid-theme'
+
+<LiquidJson
+  type="application/ld+json"
+  value={{
+    '@type': 'Product',
+    name: liquid('product.title'), // {{ product.title | json }}
+    availability: when('product.available', 'InStock', 'OutOfStock'),
+    sku: when(
+      'product.selected_or_first_available_variant.sku != blank',
+      liquid('product.selected_or_first_available_variant.sku'),
+    ),
+    offers: each(
+      'variant in product.variants',
+      { price: liquid('variant.price | divided_by: 100.0') },
+      {
+        setup: 'assign is_visible = variant.available',
+        where: 'is_visible',
+      },
+    ),
+  }}
+/>
+```
+
+| Helper                                    | Output                                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| plain JS values                           | JSON, escaped at build time                                                  |
+| `liquid(expression)`                      | `{{ expression \| json }}`                                                   |
+| `when(condition, value)`                  | key or array element only present when `condition` is truthy                 |
+| `when(condition, value, otherwise)`       | `value` or `otherwise`                                                       |
+| `each(statement, item, { setup, where })` | array from `{% for statement %}`, `where` skips iterations                   |
+| `raw(liquid)`                             | inserted as is, for Liquid that already outputs JSON (e.g. a `{% render %}`) |
+
+Commas are handled for you, and `toLiquidJson(value)` returns the same Liquid as a string.
+
+For any other script, use `LiquidScript` with either a string `value` or Liquid component children:
+
+```tsx
+<LiquidScript value={`window.product = {{ product | json }}`} />
+<LiquidScript value={`window.data = ${toLiquidJson({ id: liquid('product.id') })}`} />
+<LiquidScript>
+  {'window.ids = ['}
+  <LiquidFor statement="p in products">
+    <LiquidExpression expression="p.id" />
+    <LiquidUnless condition="forloop.last">,</LiquidUnless>
+  </LiquidFor>
+  {']'}
+</LiquidScript>
+```
 
 ---
 

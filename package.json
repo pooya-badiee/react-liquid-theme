@@ -63,6 +63,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/yargs": "^17",
+    "liquidjs": "^10.30.0",
     "react": "^19",
     "react-dom": "^19",
     "sass": "^1",
