@@ -2,7 +2,7 @@ import { Liquid } from 'liquidjs'
 import { describe, expect, test } from 'vitest'
 import { renderToString } from '../../../liquid-builder/render-to-string'
 import { LiquidJson } from './liquid-json'
-import { each, type LiquidJsonValue, liquid, raw, toLiquidJson, when } from './to-liquid-json'
+import { each, type LiquidJsonValue, liquid, liquidString, raw, toLiquidJson, when } from './to-liquid-json'
 
 const engine = new Liquid()
 // shopify outputs `null` for missing values, liquidjs outputs nothing
@@ -120,6 +120,23 @@ describe('toLiquidJson', () => {
       where: 'row.size > 0',
     })
     expect(await evaluate(value, { rows: [[], [0, 1, 0, 2], [0], [3]] })).toEqual([[1, 2], [], [3]])
+  })
+
+  test('liquidString keeps any printed output inside a json string', async () => {
+    // shopify prints filter errors inline instead of throwing
+    engine.registerFilter('fake_image_url', (value: unknown) =>
+      value ? `//cdn/${value}.jpg` : 'Liquid error (line 1): "invalid" url input',
+    )
+    const value = each('p in products', {
+      image: liquidString('p.image | fake_image_url'),
+      title: liquidString('p.title'),
+      optional: when('p.image != blank', liquidString('p.image | fake_image_url')),
+    })
+    const products = [{ image: 'a', title: 'Line\n"quoted"' }, { title: 3 }]
+    expect(await evaluate(value, { products })).toEqual([
+      { image: '//cdn/a.jpg', title: 'Line\n"quoted"', optional: '//cdn/a.jpg' },
+      { image: 'Liquid error (line 1): "invalid" url input', title: '3' },
+    ])
   })
 
   test('raw', async () => {

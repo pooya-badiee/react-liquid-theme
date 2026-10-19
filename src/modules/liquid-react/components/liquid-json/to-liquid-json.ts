@@ -6,6 +6,10 @@ interface LiquidNode {
   [NODE]: 'liquid'
   expression: string
 }
+interface StringNode {
+  [NODE]: 'string'
+  expression: string
+}
 interface RawNode {
   [NODE]: 'raw'
   liquid: string
@@ -23,7 +27,7 @@ interface EachNode {
   where?: string
   item: LiquidJsonValue
 }
-type LiquidJsonNode = LiquidNode | RawNode | WhenNode | EachNode
+type LiquidJsonNode = LiquidNode | StringNode | RawNode | WhenNode | EachNode
 
 export type LiquidJsonValue =
   | string
@@ -45,6 +49,15 @@ export interface EachOptions {
 /** A Liquid expression, output as `{{ expression | json }}`. */
 export function liquid(expression: string): LiquidNode {
   return { [NODE]: 'liquid', expression }
+}
+
+/**
+ * A Liquid expression whose printed output becomes a JSON string. Unlike `liquid()`, Liquid errors printed by a
+ * filter (e.g. `image_url` on a missing image) stay inside the string instead of breaking the JSON.
+ * Combine with `when()` for optional values.
+ */
+export function liquidString(expression: string): StringNode {
+  return { [NODE]: 'string', expression }
 }
 
 /** Liquid that already outputs valid JSON, inserted as is (e.g. a `{% render %}` of a JSON snippet). */
@@ -73,11 +86,11 @@ export function each(statement: string, item: LiquidJsonValue, { setup, where }:
 
 /** Serializes a value into a Liquid template that outputs valid JSON at runtime. */
 export function toLiquidJson(value: LiquidJsonValue): string {
-  return serialize(value, { separatorCount: 0 })
+  return serialize(value, { variableCount: 0 })
 }
 
 interface Context {
-  separatorCount: number
+  variableCount: number
 }
 
 interface Entry {
@@ -91,6 +104,11 @@ function serialize(value: LiquidJsonValue, ctx: Context): string {
     switch (value[NODE]) {
       case 'liquid':
         return `{{ ${value.expression} | json }}`
+      case 'string': {
+        // the captured text is json encoded as a whole, including any error message printed while rendering it
+        const variable = nextVariable(ctx, 'str')
+        return `{% capture ${variable} %}{{ ${value.expression} }}{% endcapture %}{{ ${variable} | json }}`
+      }
       case 'raw':
         return value.liquid
       case 'when':
@@ -189,8 +207,12 @@ function serializeEach(node: EachNode, ctx: Context): string {
 }
 
 function nextFlag(ctx: Context) {
-  ctx.separatorCount += 1
-  return `_json_sep_${ctx.separatorCount}`
+  return nextVariable(ctx, 'sep')
+}
+
+function nextVariable(ctx: Context, kind: string) {
+  ctx.variableCount += 1
+  return `_json_${kind}_${ctx.variableCount}`
 }
 
 /**
