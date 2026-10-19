@@ -28,7 +28,12 @@ export default defineConfig([
     transform,
     // src modules are side-effect free; avoids emitting re-export-only barrel files
     treeshake: { moduleSideEffects: [{ test: /[\\/]src[\\/].*[\\/]index\.tsx?$/, sideEffects: false }] },
-    plugins: [copyPlugin([{ from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' }])],
+    plugins: [
+      copyPlugin([
+        { from: 'src/declarations.d.ts', to: 'dist/declarations.d.ts' },
+        { from: 'src/react-css.d.ts', to: 'dist/react-css.d.ts' },
+      ]),
+    ],
     output: {
       format: 'esm',
       dir: 'dist',
