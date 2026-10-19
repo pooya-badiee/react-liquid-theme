@@ -16,7 +16,7 @@
     "dist",
     "llms.txt"
   ],
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "format": "biome format",
     "lint": "biome lint",
