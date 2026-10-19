@@ -1,14 +1,28 @@
 import { type BaseSelfClosingLiquidTagProps, LiquidSelfClosingTag } from '../liquid-tag'
+import { getRenderStatement, type StructuredRenderProps } from './render-statement'
 
-interface LiquidRenderProps extends BaseSelfClosingLiquidTagProps {
-  statement: string
-}
+export type LiquidRenderProps = BaseSelfClosingLiquidTagProps &
+  (
+    | { statement: string }
+    | (StructuredRenderProps &
+        ({ with?: string; for?: never } | { with?: never; for?: string }) & { statement?: never })
+  )
 
 /**
- * `{% render statement %}`. The statement includes the quoted snippet name.
+ * `{% render ... %}`, from a raw `statement` (including the quoted snippet name) or from `snippet` + `args`.
  *
  * @example <LiquidRender statement="'product-card', product: product" />
+ * @example <LiquidRender snippet="image-group" args={{ image: 'section.settings.image', size: "'large'" }} />
+ * @example <LiquidRender snippet="product-card" for="collection.products" as="product" />
  */
-export function LiquidRender({ statement, ...otherProps }: LiquidRenderProps) {
-  return <LiquidSelfClosingTag name="render" statement={statement} {...otherProps} />
+export function LiquidRender(props: LiquidRenderProps) {
+  const statement = props.statement ?? getRenderStatement(props as StructuredRenderProps)
+  return (
+    <LiquidSelfClosingTag
+      name="render"
+      statement={statement}
+      leftTrim={!!props.leftTrim}
+      rightTrim={!!props.rightTrim}
+    />
+  )
 }
