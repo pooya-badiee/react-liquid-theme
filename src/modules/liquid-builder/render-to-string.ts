@@ -19,9 +19,20 @@ const HEADER_COMMENT = `
 {%- endcomment -%}
 `
 
+export type HtmlWhitespaceSensitivity = 'css' | 'strict' | 'ignore'
+
+export interface RenderOptions {
+  leaveComment?: boolean
+  /**
+   * Passed to prettier. `css` (default) keeps rendered whitespace as is, e.g. `<a>Terms</a>.` stays glued.
+   * `ignore` formats more freely but can add visible spaces between inline elements and text.
+   */
+  htmlWhitespaceSensitivity?: HtmlWhitespaceSensitivity | undefined
+}
+
 export async function renderToString(
   reactNode: ReactNode,
-  { leaveComment = false }: { leaveComment?: boolean } = {},
+  { leaveComment = false, htmlWhitespaceSensitivity = 'css' }: RenderOptions = {},
 ): Promise<string> {
   return await new Promise<string>((resolve, reject) => {
     const stream = new PassThrough()
@@ -41,7 +52,7 @@ export async function renderToString(
         tabWidth: 2,
         singleQuote: true,
         trailingComma: 'all',
-        htmlWhitespaceSensitivity: 'ignore',
+        htmlWhitespaceSensitivity,
       })
       resolve(html)
     })

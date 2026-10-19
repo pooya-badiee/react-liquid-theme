@@ -8,4 +8,5 @@ export const optionsSchema = z.object({
   env: z.string().default('.env'),
   js: z.string().default('main.js'),
   sassSilenceDeprecations: z.array(z.string()).optional(),
+  htmlWhitespaceSensitivity: z.enum(['css', 'strict', 'ignore']).default('css'),
 })

@@ -146,7 +146,10 @@ export async function generateLiquidFiles({
       let outputString = ''
       if (fileInfo.renderType === 'jsx') {
         const Component = module.default
-        outputString = await renderToString(<Component />, { leaveComment: true })
+        outputString = await renderToString(<Component />, {
+          leaveComment: true,
+          htmlWhitespaceSensitivity: options.htmlWhitespaceSensitivity,
+        })
       } else {
         // string render
         outputString = module.default()

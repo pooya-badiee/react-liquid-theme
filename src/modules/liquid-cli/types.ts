@@ -11,4 +11,11 @@ export type ArgOptions = {
 
 export type ConfigFileOptions = ArgOptions & {
   sassSilenceDeprecations?: BuildOptions['sassSilenceDeprecations']
+  /**
+   * How the generated Liquid is formatted around inline elements (prettier's option).
+   * `css` (default) never changes rendered whitespace; `ignore` is what versions before 1.1 used and can turn
+   * `<a>Terms</a>.` into `Terms .` on the page.
+   * @default 'css'
+   */
+  htmlWhitespaceSensitivity?: BuildOptions['htmlWhitespaceSensitivity']
 }

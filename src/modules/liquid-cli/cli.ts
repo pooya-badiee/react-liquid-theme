@@ -75,20 +75,8 @@ export function setupCli() {
             type: 'string',
           }),
       async (argv) => {
-        const options = await await loadSettings(argv)
-        if (argv.watch) {
-          watch({
-            dist: options.dist,
-            source: options.source,
-            theme: options.theme,
-            css: options.css,
-            envFile: options.env,
-            jsFile: options.js,
-            sassSilenceDeprecations: options.sassSilenceDeprecations,
-          })
-          return
-        }
-        build({
+        const options = await loadSettings(argv)
+        const buildOptions = {
           dist: options.dist,
           source: options.source,
           theme: options.theme,
@@ -96,7 +84,13 @@ export function setupCli() {
           envFile: options.env,
           jsFile: options.js,
           sassSilenceDeprecations: options.sassSilenceDeprecations,
-        })
+          htmlWhitespaceSensitivity: options.htmlWhitespaceSensitivity,
+        }
+        if (argv.watch) {
+          watch(buildOptions)
+          return
+        }
+        build(buildOptions)
       },
     )
     .version('0.12.0')

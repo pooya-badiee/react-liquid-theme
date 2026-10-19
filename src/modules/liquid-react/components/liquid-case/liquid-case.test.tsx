@@ -12,16 +12,17 @@ test('renders case with when and else', async () => {
       <LiquidElse>Unknown</LiquidElse>
     </LiquidCase>,
   )
+  // trim markers keep the rendered output free of the whitespace added by formatting
   expect(output.trim()).toBe(
     [
-      '{% case product.color %}',
-      "  {% when 'Red', 'Blue' -%}",
+      '{% case product.color -%}',
+      "  {%- when 'Red', 'Blue' -%}",
       '    Primary',
-      "  {% when 'Green', 'Yellow' -%}",
+      "  {%- when 'Green', 'Yellow' -%}",
       '    Secondary',
-      '  {% else -%}',
+      '  {%- else -%}',
       '    Unknown',
-      '{% endcase %}',
+      '{%- endcase %}',
     ].join('\n'),
   )
 })
