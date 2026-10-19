@@ -64,6 +64,26 @@ the `.client.extension.ts` files will be compiled to a single `main.js` file in 
 | `*.section.tsx`                          | `theme/sections`  |
 | `*.template.tsx`                         | `theme/templates` |
 | `*.{section,template,snippet}.client.ts` | `assets/main.js`  |
+| `*.{sections,snippets,blocks,templates}.tsx` | one file per key of the default export |
+
+Names must be unique per type: `perks.section.tsx` and `perks.snippet.tsx` are fine, two `hero.section.tsx` in
+different folders fail the build.
+
+---
+
+## ⚙️ `theme.config.js`
+
+```js
+import { defineOptions } from 'react-liquid-theme/config'
+
+export default defineOptions({
+  theme: 'shopify-theme',
+  // `css` (default) keeps rendered whitespace intact; `ignore` was the behavior before 1.1
+  htmlWhitespaceSensitivity: 'css',
+})
+```
+
+Accepts every `generate` option plus `sassSilenceDeprecations` and `htmlWhitespaceSensitivity`.
 
 ---
 
@@ -76,6 +96,7 @@ React Liquid Theme supports:
 - **CSS/SCSS Modules**
 
 Import styles into React components, and they will be bundled into `main.css` in the `theme/assets` directory.
+CSS custom properties are typed in `style`: `style={{ '--gap': '1rem' }}`.
 
 ---
 
@@ -105,12 +126,37 @@ These React components map to Liquid tags or control flow logic:
 | `LiquidTablerow`      | `{% tablerow %}`                  |
 | `LiquidUnless`        | `{% unless %}`                    |
 | `LiquidStatement`     | `{% liquid %}`                    |
-| `LiquidRender`        | `{% render %}`                    |
+| `LiquidRender`        | `{% render %}`, `statement` or `snippet` + `args` |
+| `LiquidInclude`       | `{% include %}` (legacy)          |
+| `LiquidSection`       | `{% section 'name' %}`            |
+| `LiquidSections`      | `{% sections 'name' %}`           |
+| `LiquidSchema`        | `{% schema %}` from an object     |
 | `LiquidExpression`    | `{{ expression }}`                |
 | `LiquidRaw`           | Parses a Liquid string into React |
 | `LiquidTag`           | Can create any tag                |
 | `LiquidJson`          | `<script>` with Liquid-built JSON |
 | `LiquidScript`        | `<script>` with Liquid inside     |
+
+---
+
+## 🗂 Section Schema
+
+```tsx
+import { defineSectionSchema, LiquidSchema } from 'react-liquid-theme'
+
+const schema = defineSectionSchema({
+  name: 'Hero',
+  settings: [{ type: 'text', id: 'title', label: 'Title' }],
+  presets: [{ name: 'Hero' }],
+})
+
+export default function HeroSection() {
+  return <LiquidSchema schema={schema} />
+}
+```
+
+`defineSectionSchema` / `defineBlockSchema` only add type checking: unknown setting types and misspelled keys are
+compile errors.
 
 ---
 
@@ -148,6 +194,7 @@ import { each, LiquidJson, liquid, when } from 'react-liquid-theme'
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
 | plain JS values                           | JSON, escaped at build time                                                  |
 | `liquid(expression)`                      | `{{ expression \| json }}`                                                   |
+| `liquidString(expression)`                | printed output as a JSON string, Liquid errors (e.g. `image_url`) stay inside |
 | `when(condition, value)`                  | key or array element only present when `condition` is truthy                 |
 | `when(condition, value, otherwise)`       | `value` or `otherwise`                                                       |
 | `each(statement, item, { setup, where })` | array from `{% for statement %}`, `where` skips iterations                   |

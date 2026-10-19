@@ -21,15 +21,16 @@ This file is a guide for AI assistants writing code in a project that uses `reac
 ## Exports
 
 ```ts
-// Liquid components + JSON helpers + decoding helpers
-import { LiquidIf, LiquidFor, LiquidExpression, LiquidJson, liquid, when, each, raw, toLiquidJson,
+// Liquid components + schema helpers + JSON helpers + decoding helpers
+import { LiquidIf, LiquidFor, LiquidExpression, LiquidRender, LiquidSchema, defineSectionSchema, defineBlockSchema,
+         LiquidJson, liquid, liquidString, when, each, raw, toLiquidJson,
          HtmlDecoder, makeDecodable } from 'react-liquid-theme'
 import { defineJsxTag } from 'react-liquid-theme/utils' // custom element tag names in JSX
 import { defineOptions } from 'react-liquid-theme/config' // theme.config.js
 ```
 
 `src/global.d.ts` must contain `/// <reference types="react-liquid-theme/declarations" />` (types for CSS/SCSS
-imports and `import.meta.env`).
+imports, `import.meta.env` and CSS custom properties in `style`).
 
 ## File naming -> theme output
 
@@ -47,9 +48,29 @@ Output file name is `<name>` (everything before `.<type>`); subfolders are flatt
 | `en.default.locale.ts`      | `theme/locales/en.default.<ext>`|
 | `foo.asset.ts`              | `theme/assets/foo.<ext>`        |
 | `card.snippet.client.ts`    | bundled into `theme/assets/main.js` |
+| `showroom.sections.tsx`     | one `theme/sections/<key>.liquid` per key of the default export |
+
+A section and a snippet may share a name (`perks.section.tsx` + `perks.snippet.tsx`). Two sources that map to the
+same output (e.g. `a/hero.section.tsx` and `b/hero.section.tsx`) fail the build with an error.
 
 Client files MUST be named `<name>.<type>.client.ts(x)` (`.client` right before the extension) and only get bundled
 when a matching server file (`<name>.<type>.tsx`) exists.
+
+### Several outputs from one file
+
+`<name>.sections.tsx`, `.snippets.tsx`, `.blocks.tsx` and `.templates.tsx` export an object as default; every key is
+an output file name (letters, digits, `-`, `_`, `.`) and every value a component. The source name is not used.
+
+```tsx
+// src/showroom.sections.tsx -> theme/sections/showroom-paris.liquid, theme/sections/showroom-rome.liquid
+const showroom = (city: string) => () => (
+  <>
+    <section>{city}</section>
+    <LiquidSchema schema={defineSectionSchema({ name: `Showroom ${city}` })} />
+  </>
+)
+export default { 'showroom-paris': showroom('Paris'), 'showroom-rome': showroom('Rome') }
+```
 
 ### Non-Liquid outputs (`fileInfo`)
 
@@ -143,16 +164,22 @@ Single tags:
 | `LiquidWhen`          | `value`, children      | `{% when value %}` + children        |
 | `LiquidAssign`        | `name`, `value`        | `{% assign name = value %}`          |
 | `LiquidEcho`          | `expression`           | `{% echo expression %}`              |
-| `LiquidRender`        | `statement`            | `{% render statement %}`             |
+| `LiquidRender`        | `statement`, or `snippet`, `args?`, `with?`/`for?`, `as?` | `{% render 'snippet' with x as y, key: value %}` |
+| `LiquidInclude`       | same as `LiquidRender` (no `for`) | `{% include ... %}` (deprecated, for legacy themes) |
+| `LiquidSection`       | `name`                 | `{% section 'name' %}`               |
+| `LiquidSections`      | `name`                 | `{% sections 'name' %}`              |
 | `LiquidCycle`         | `values: string[]`, `group?` | `{% cycle group: v1, v2 %}`    |
 | `LiquidIncrement`     | `variableName`         | `{% increment variableName %}`       |
 | `LiquidDecrement`     | `variableName`         | `{% decrement variableName %}`       |
 | `LiquidInlineComment` | `comment`              | `{% # comment %}`                    |
 | `LiquidBreak`         | -                      | `{% break %}`                        |
 | `LiquidContinue`      | -                      | `{% continue %}`                     |
-| `LiquidSelfClosingTag`| `name`, `statement?`   | `{% name statement %}` (any single tag: `section`, `sections`, `content_for`, `layout`, ...) |
+| `LiquidSelfClosingTag`| `name`, `statement?`   | `{% name statement %}` (any single tag: `content_for`, `layout`, ...) |
 | `LiquidExpression`    | `expression`           | `{{ expression }}`                   |
 | `LiquidStatement`     | `statement` (multiline)| `{% liquid statement %}`             |
+
+`LiquidRender` args are Liquid expressions: `args={{ image: 'section.settings.image', size: "'large'" }}`;
+`undefined` values are skipped. The snippet name is a plain string (`snippet="card"`), quotes are added.
 
 Other:
 
@@ -177,13 +204,17 @@ Block tags have two tags, so four flags:
 
 ```tsx
 // src/hero.section.tsx
-import { HtmlDecoder, LiquidExpression, LiquidTag } from 'react-liquid-theme'
+import { defineSectionSchema, LiquidExpression, LiquidSchema } from 'react-liquid-theme'
 
-const schema = {
+const schema = defineSectionSchema({
   name: 'Hero',
-  settings: [{ type: 'text', id: 'title', label: 'Title', default: 'Welcome' }],
+  settings: [
+    { type: 'text', id: 'title', label: 'Title', default: 'Welcome' },
+    { type: 'range', id: 'margin', label: 'Margin', min: 0, max: 100, step: 4, unit: 'px', default: 20 },
+  ],
+  blocks: [{ type: '@app' }, { type: 'slide', name: 'Slide', settings: [] }],
   presets: [{ name: 'Hero' }],
-}
+})
 
 export default function HeroSection() {
   return (
@@ -191,15 +222,19 @@ export default function HeroSection() {
       <section className="hero">
         <h1><LiquidExpression expression="section.settings.title | escape" /></h1>
       </section>
-      <LiquidTag name="schema">
-        <HtmlDecoder>{JSON.stringify(schema, null, 2)}</HtmlDecoder>
-      </LiquidTag>
+      <LiquidSchema schema={schema} />
     </>
   )
 }
 ```
 
-`HtmlDecoder` is required, otherwise the JSON quotes are HTML-escaped.
+- `defineSectionSchema` (sections) / `defineBlockSchema` (theme blocks) return the schema unchanged; they exist for
+  type checking: unknown setting types, misspelled keys, missing required keys (`range` needs `min`/`max`/`default`),
+  unknown templates in `enabled_on`/`disabled_on`.
+- Types are exported too: `SectionSchema`, `ThemeBlockSchema`, `Setting`, `SettingType`, `SchemaPreset`, ...
+- `LiquidSchema` accepts any object. Without it, write
+  `<LiquidTag name="schema"><HtmlDecoder>{JSON.stringify(schema)}</HtmlDecoder></LiquidTag>` (`HtmlDecoder` is required,
+  otherwise the JSON quotes are HTML-escaped).
 
 ## `<script>` with Liquid
 
@@ -225,6 +260,10 @@ React only allows one string inside `<script>`, so Liquid components cannot be n
 ```
 
 - `liquid(expr)` -> `{{ expr | json }}` (do not add `| json` yourself)
+- `liquidString(expr)` -> the printed output of `{{ expr }}` as a JSON string (via `{% capture %}` + `| json`). Use it
+  for filters that print a Liquid error on bad input (`image_url` on a missing image): `liquid()` would put the error
+  outside the quotes and break the JSON. For optional values, combine with `when()`:
+  `image: when('product.featured_image', liquidString('product.featured_image | image_url: width: 800'))`
 - `when(cond, then)` -> key/array item omitted when falsy (`null` if used as a bare value)
 - `when(cond, then, otherwise)` -> either value
 - `each(statement, item, { setup?, where? })` -> JSON array from `{% for %}`; `where` skips iterations
@@ -281,6 +320,8 @@ customElements.define('app-counter', AppCounter)
 - CSS modules: `import classes from './card.module.scss'` -> `classes.root` is the scoped class name (`root__<n>`).
 - SCSS files get a global `$env` map built from the `.env` file, and `~pkg/path` imports resolve from `node_modules`.
 
+CSS custom properties work in `style` without casts: `style={{ '--gap': '1rem', color: 'red' }}`.
+
 ## Environment variables
 
 Values from `.env` (path set by `--env`) are inlined as `import.meta.env.KEY` in server and client files
@@ -305,6 +346,7 @@ Options (CLI flags override `theme.config.js`):
 | `js`     | `main.js`       | client JS bundle name in `theme/assets`       |
 | `env`    | `.env`          | env file                                      |
 | `sassSilenceDeprecations` | - | config file only, passed to Sass        |
+| `htmlWhitespaceSensitivity` | `css` | config file only, prettier option for the output. `css` never changes rendered whitespace; `ignore` (pre-1.1 behavior) can turn `<a>Terms</a>.` into "Terms ." |
 
 ```js
 // theme.config.js
@@ -317,10 +359,13 @@ Recommended `tsconfig.json`: `{ "compilerOptions": { "jsx": "preserve", "module"
 
 ## Rules of thumb for AI assistants
 
-1. Never edit generated files in the theme dir (they start with an `AUTO-GENERATED` comment); edit `src/` instead.
+1. Never edit generated files in the theme dir (they start with an `AUTO-GENERATED` comment naming
+   the source file to edit); edit that file in `src/` instead.
 2. Liquid text output -> `LiquidExpression`; Liquid in attributes with quotes -> `makeDecodable`.
 3. Liquid string literals inside props need their own quotes: `condition="handle == 'home'"`.
 4. Use JS (`map`, constants, helper components) for things known at build time, Liquid components for things
    known only at request time.
 5. No React runtime features (hooks, event handlers, props on the default export).
 6. Reach for `LiquidTag` / `LiquidSelfClosingTag` for any Liquid tag without a dedicated component.
+7. Sections: `defineSectionSchema` + `<LiquidSchema schema={schema} />`. Render calls with several arguments:
+   `<LiquidRender snippet="x" args={{ ... }} />` instead of building the statement string by hand.
