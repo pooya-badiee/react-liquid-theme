@@ -2,9 +2,16 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { styleText } from 'node:util'
 import { type RolldownError, watch as rolldownWatch } from 'rolldown'
-import { cleanup, copyAssetFiles, type GenerationCache, generateLiquidFiles, getAllProcessableFiles } from './build'
+import {
+  cleanup,
+  copyAssetFiles,
+  type GenerationCache,
+  generateLiquidFiles,
+  getAllProcessableFiles,
+  getInputEntries,
+} from './build'
 import { getConfig } from './config'
-import { PROCESSABLE_EXTENSIONS } from './constants'
+import { ALL_PROCESSABLE_EXTENSIONS } from './constants'
 import type { BuildOptions } from './types'
 import { throttle } from './utils'
 
@@ -81,8 +88,17 @@ export function watch(options: BuildOptions) {
     const allProcessableFiles = getAllProcessableFiles({ sourcePath: path.join(rootPath, options.source), rootPath })
     console.log(styleText('cyan', `📁 Found ${styleText('bold', String(allProcessableFiles.length))} snippet files`))
 
+    let inputEntries: Record<string, string>
+    try {
+      inputEntries = getInputEntries(allProcessableFiles, rootPath)
+    } catch (error) {
+      // the source watcher below restarts this once files are renamed
+      console.error(styleText('red', '❌'), (error as Error).message)
+      return () => {}
+    }
+
     const watcher = rolldownWatch({
-      ...getConfig(allProcessableFiles, {
+      ...getConfig(inputEntries, {
         css: options.css,
         cwd: rootPath,
         envFile: options.envFile,
@@ -158,5 +174,5 @@ export function watch(options: BuildOptions) {
 }
 
 function getIsPathProcessable(path: string) {
-  return PROCESSABLE_EXTENSIONS.some((ext) => path.includes(`.${ext}.`))
+  return ALL_PROCESSABLE_EXTENSIONS.some((ext) => path.includes(`.${ext}.`))
 }

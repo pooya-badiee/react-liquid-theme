@@ -11,10 +11,11 @@ interface ConfigOptions {
   sassSilenceDeprecations?: string[] | undefined
 }
 
-export function getConfig(files: string[], options: ConfigOptions) {
+/** `entries` maps entry names (the dist file name without `.js`) to source files */
+export function getConfig(entries: Record<string, string>, options: ConfigOptions) {
   const env = getEnvFromPath(options.envFile)
   return {
-    ...getBaseConfig(files, options, env),
+    ...getBaseConfig(entries, options, env),
     platform: 'node',
     resolve: {
       mainFields: ['module', 'main'],
@@ -61,9 +62,9 @@ export function getClientConfig(files: string[], options: ConfigOptions) {
 
 const RESOLVE_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json']
 
-function getBaseConfig(files: string[], options: ConfigOptions, env: Record<string, string>) {
+function getBaseConfig(input: string[] | Record<string, string>, options: ConfigOptions, env: Record<string, string>) {
   return {
-    input: files,
+    input,
     cwd: options.cwd,
     tsconfig: getTsconfig(options.cwd),
     // type-only re-exports (`export { Props } from './types'`) survive the per-file transform
