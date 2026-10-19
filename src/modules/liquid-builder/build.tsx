@@ -61,7 +61,7 @@ export async function build(options: BuildOptions) {
   const processingStartTime = performance.now()
 
   try {
-    await generateLiquidFiles({
+    const { generatedCount } = await generateLiquidFiles({
       distDir,
       allProcessableFiles: allSnippetFiles,
       rootPath,
@@ -76,7 +76,7 @@ export async function build(options: BuildOptions) {
     console.log(
       styleText(
         'green',
-        `✅ Successfully generates ${styleText('bold', String(output.length))} snippets in ${formattedProcessingTime}`,
+        `✅ Successfully generated ${styleText('bold', String(generatedCount))} files in ${formattedProcessingTime}`,
       ),
     )
     console.log('\n\n')
@@ -204,21 +204,25 @@ export async function generateLiquidFiles({
 
   if (clientFiles.length && isClientBundleStale) {
     const { cleanup, tempFilePath } = getOneFileThatImportsAllFiles(clientFiles, sourcePath)
-    const clientBundle = await rolldown(
-      getClientConfig([tempFilePath], {
-        css: options.css,
-        cwd: rootPath,
-        envFile: options.envFile,
-        sassSilenceDeprecations: options.sassSilenceDeprecations,
-      }),
-    )
-    await clientBundle.write({
-      format: 'esm',
-      file: path.join(distDir, 'assets', jsOutputFile),
-      minify: true,
-    })
-    await clientBundle.close()
-    cleanup()
+    // removed even when bundling fails, it lives in the source dir
+    try {
+      const clientBundle = await rolldown(
+        getClientConfig([tempFilePath], {
+          css: options.css,
+          cwd: rootPath,
+          envFile: options.envFile,
+          sassSilenceDeprecations: options.sassSilenceDeprecations,
+        }),
+      )
+      await clientBundle.write({
+        format: 'esm',
+        file: path.join(distDir, 'assets', jsOutputFile),
+        minify: true,
+      })
+      await clientBundle.close()
+    } finally {
+      cleanup()
+    }
   }
 
   // only stored after everything succeeded, so failed files are retried on the next call
@@ -258,7 +262,7 @@ async function renderModule(
     if (typeof exported !== 'function') {
       throw new Error(`${label} must be a ${fileInfo.renderType === 'jsx' ? 'component' : 'function'}`)
     }
-    if (fileInfo.renderType === 'string') return String(exported())
+    if (fileInfo.renderType === 'string') return String(await exported())
     const Component = exported as () => ReactNode
     return renderToString(<Component />, {
       leaveComment: true,

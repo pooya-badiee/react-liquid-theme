@@ -147,9 +147,7 @@ export function watch(options: BuildOptions) {
 
   disposer = startRolldownWatcher()
 
-  const handleWatchEvent = throttle((filePath: string) => {
-    if (!getIsPathProcessable(filePath)) return
-
+  const restartRolldownWatcher = throttle(() => {
     disposer()
     disposer = startRolldownWatcher()
   }, 100)
@@ -158,7 +156,8 @@ export function watch(options: BuildOptions) {
   // `rename` fires when files are added or removed
   const watcher = fs
     .watch(sourceDir, { recursive: true }, (eventType, fileName) => {
-      if (eventType === 'rename' && fileName) handleWatchEvent(path.join(sourceDir, fileName))
+      // filtered before throttling, so an unrelated file (e.g. the client temp file) can't swallow a real change
+      if (eventType === 'rename' && fileName && getIsPathProcessable(fileName)) restartRolldownWatcher()
     })
     .on('error', (error) => {
       console.error(styleText('red', '❌ Watcher error:'), error.message)

@@ -93,7 +93,7 @@ export function setupCli() {
         build(buildOptions)
       },
     )
-    .version('0.12.0')
+    .version()
     .strict()
     .parse()
 }

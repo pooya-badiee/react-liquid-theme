@@ -15,7 +15,7 @@ interface ConfigOptions {
 export function getConfig(entries: Record<string, string>, options: ConfigOptions) {
   const env = getEnvFromPath(options.envFile)
   return {
-    ...getBaseConfig(entries, options, env),
+    ...getBaseConfig(entries, options, env, true),
     platform: 'node',
     resolve: {
       mainFields: ['module', 'main'],
@@ -42,7 +42,8 @@ export function getConfig(entries: Record<string, string>, options: ConfigOption
 export function getClientConfig(files: string[], options: ConfigOptions) {
   const env = getEnvFromPath(options.envFile)
   return {
-    ...getBaseConfig(files, options, env),
+    // the server bundle has the client files as entries too, so its css already covers them
+    ...getBaseConfig(files, options, env, false),
     platform: 'browser',
     resolve: {
       extensions: RESOLVE_EXTENSIONS,
@@ -62,7 +63,12 @@ export function getClientConfig(files: string[], options: ConfigOptions) {
 
 const RESOLVE_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json']
 
-function getBaseConfig(input: string[] | Record<string, string>, options: ConfigOptions, env: Record<string, string>) {
+function getBaseConfig(
+  input: string[] | Record<string, string>,
+  options: ConfigOptions,
+  env: Record<string, string>,
+  emitCss: boolean,
+) {
   return {
     input,
     cwd: options.cwd,
@@ -72,7 +78,12 @@ function getBaseConfig(input: string[] | Record<string, string>, options: Config
     // tsconfig `jsx` (e.g. `preserve`) is intentionally overridden by `transform.jsx`
     checks: { configurationFieldConflict: false },
     plugins: [
-      createStylePlugin({ output: options.css, env, sassSilenceDeprecations: options.sassSilenceDeprecations }),
+      createStylePlugin({
+        output: options.css,
+        emitCss,
+        env,
+        sassSilenceDeprecations: options.sassSilenceDeprecations,
+      }),
     ],
   } satisfies InputOptions
 }

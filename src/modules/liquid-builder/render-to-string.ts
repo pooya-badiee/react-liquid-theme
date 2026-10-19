@@ -46,21 +46,25 @@ export async function renderToString(
 
     stream.setEncoding('utf8')
     stream.on('data', (chunk: string) => {
-      // removes dead html comments
-      html += removeTrashComments(chunk)
+      html += chunk
     })
     stream.on('end', async () => {
-      html = decodeHtml(html, DECODE_START_SIGN, DECODE_END_SIGN)
-      html = await prettier.format((leaveComment ? getHeaderComment(sourceFile) : '') + html, {
-        parser: 'liquid-html',
-        plugins: [liquidPlugin],
-        printWidth: 120,
-        tabWidth: 2,
-        singleQuote: true,
-        trailingComma: 'all',
-        htmlWhitespaceSensitivity,
-      })
-      resolve(html)
+      try {
+        // removes dead html comments, on the whole output so a comment split across chunks is caught too
+        html = decodeHtml(removeTrashComments(html), DECODE_START_SIGN, DECODE_END_SIGN)
+        html = await prettier.format((leaveComment ? getHeaderComment(sourceFile) : '') + html, {
+          parser: 'liquid-html',
+          plugins: [liquidPlugin],
+          printWidth: 120,
+          tabWidth: 2,
+          singleQuote: true,
+          trailingComma: 'all',
+          htmlWhitespaceSensitivity,
+        })
+        resolve(html)
+      } catch (error) {
+        reject(error)
+      }
     })
     stream.on('error', reject)
 
@@ -68,9 +72,10 @@ export async function renderToString(
       onAllReady() {
         pipe(stream)
       },
-      onError(error) {
-        console.error('Render error:', error)
-      },
+      // without this a component that throws leaves the promise pending forever, since `onAllReady` never fires
+      onShellError: reject,
+      // errors inside Suspense boundaries would otherwise render a client fallback, meaningless for liquid
+      onError: reject,
     })
   })
 }

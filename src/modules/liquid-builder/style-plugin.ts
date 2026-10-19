@@ -8,13 +8,20 @@ import { compileString as compileSass, type DeprecationOrId } from 'sass'
 
 interface Options {
   output?: string
+  /** `false` still compiles styles (class names are needed) but writes no css file */
+  emitCss?: boolean
   env?: Record<string, string>
   sassSilenceDeprecations?: string[] | undefined
 }
 
-export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations, env = {} }: Options = {}) {
+export function createStylePlugin({
+  output = 'main.css',
+  emitCss = true,
+  sassSilenceDeprecations,
+  env = {},
+}: Options = {}) {
   const SASS_ENV_STRING = `$env: (${Object.entries(env)
-    .map(([key, value]) => `${key}: "${String(value).replace(/"/g, '\\"')}"`)
+    .map(([key, value]) => `${key}: "${String(value).replace(/["\\]/g, '\\$&')}"`)
     .join(', ')});`
 
   const processor = postcss([])
@@ -99,7 +106,7 @@ export function createStylePlugin({ output = 'main.css', sassSilenceDeprecations
     },
     generateBundle() {
       const finalCss = [...globalCss, ...moduleCss].join('\n')
-      if (!finalCss) return
+      if (!emitCss || !finalCss) return
 
       this.emitFile({
         type: 'asset',

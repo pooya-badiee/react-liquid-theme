@@ -93,7 +93,7 @@ export function setup() {
     )
   }
   // snippet client file
-  const snippetClientFile = path.join(srcDir, 'counter.client.snippet.ts')
+  const snippetClientFile = path.join(srcDir, 'counter.snippet.client.ts')
   if (!fs.existsSync(snippetClientFile)) {
     fs.writeFileSync(
       snippetClientFile,

@@ -104,4 +104,25 @@ describe('build', () => {
     expect(errors.mock.calls.flat().join(' ')).toMatch(/sections\/hero\.liquid <- src\/hero.section.tsx, src\/heroes/)
     expect(fs.existsSync(path.join(projectDir, 'theme', 'sections', 'hero.liquid'))).toBe(false)
   })
+
+  test('a component that throws fails the build instead of hanging it', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    writeSource('boom.snippet.tsx', 'export default () => { throw new Error("boom") }')
+
+    await build(options)
+
+    expect(process.exitCode).toBe(1)
+    expect(errors.mock.calls.flat().join(' ')).toContain('boom')
+  })
+
+  test('css imported by client files lands in the main css only, not in a nested assets folder', async () => {
+    writeSource('card.snippet.tsx', 'export default () => <div>card</div>')
+    writeSource('card.snippet.client.ts', 'import "./card.css"; console.log("client")')
+    writeSource('card.css', '.card { color: red; }')
+
+    await build(options)
+
+    expect(readTheme('assets/main.css')).toContain('.card')
+    expect(fs.existsSync(path.join(projectDir, 'theme', 'assets', 'assets'))).toBe(false)
+  })
 })
