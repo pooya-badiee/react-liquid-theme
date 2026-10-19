@@ -175,7 +175,7 @@ export async function generateLiquidFiles({
       const fileUrl = pathToFileURL(file.filePath).toString()
       // a new hash means new content, so the module cache has to be bypassed
       const module = await import(`${fileUrl}?hash=${nextHashes.get(file.filePath)}`)
-      const outputs = await renderModule(module, file, options)
+      const outputs = await renderModule(module, file, { options, rootPath })
       return { file, outputs }
     }),
   )
@@ -250,10 +250,11 @@ interface FileInfo {
 async function renderModule(
   module: { default: unknown; fileInfo?: Partial<FileInfo> },
   file: ExecutableFile,
-  options: BuildOptions,
+  { options, rootPath }: { options: BuildOptions; rootPath: string },
 ) {
+  const sourceFile = path.relative(rootPath, file.sourceFilePath).split(path.sep).join('/')
   const fileInfo: FileInfo = { extension: 'liquid', renderType: 'jsx', ...module.fileInfo }
-  const render = async (exported: unknown, label: string) => {
+  const render = async (exported: unknown, label: string, exportName?: string) => {
     if (typeof exported !== 'function') {
       throw new Error(`${label} must be a ${fileInfo.renderType === 'jsx' ? 'component' : 'function'}`)
     }
@@ -261,6 +262,7 @@ async function renderModule(
     const Component = exported as () => ReactNode
     return renderToString(<Component />, {
       leaveComment: true,
+      sourceFile: exportName ? `${sourceFile} (key "${exportName}" of the default export)` : sourceFile,
       htmlWhitespaceSensitivity: options.htmlWhitespaceSensitivity,
     })
   }
@@ -282,7 +284,7 @@ async function renderModule(
       if (!/^[\w.-]+$/.test(outputName)) {
         throw new Error(`Invalid output name "${outputName}" in ${sourceLabel}, use letters, digits, "-", "_" and "."`)
       }
-      const content = await render(value, `"${outputName}" in ${sourceLabel}`)
+      const content = await render(value, `"${outputName}" in ${sourceLabel}`, outputName)
       return { outputPath: `${file.targetFolder}/${outputName}.${fileInfo.extension}`, content }
     }),
   )

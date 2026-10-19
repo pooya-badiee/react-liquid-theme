@@ -52,6 +52,9 @@ describe('build', () => {
 
     expect(readTheme('sections/program-perks.liquid')).toContain('the section')
     expect(readTheme('snippets/program-perks.liquid')).toContain('the snippet')
+    expect(readTheme('sections/program-perks.liquid')).toContain(
+      'Edit the source file instead:\n  src/sections/program-perks.section.tsx\n',
+    )
     const js = readTheme('assets/main.js')
     expect(js).toContain('section client')
     expect(js).toContain('snippet client')
@@ -85,6 +88,9 @@ describe('build', () => {
 
     expect(readTheme('sections/showroom-paris.liquid')).toContain('Paris')
     expect(readTheme('sections/showroom-rome.liquid')).toContain('Rome')
+    expect(readTheme('sections/showroom-rome.liquid')).toContain(
+      'src/showroom.sections.tsx (key "showroom-rome" of the default export)',
+    )
   })
 
   test('a multi-output key colliding with another source is an error', async () => {
